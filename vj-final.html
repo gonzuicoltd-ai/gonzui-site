@@ -1,0 +1,3171 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>VJ Cymatics 3D</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #050609;
+      --panel: rgba(13, 16, 22, 0.88);
+      --panel-strong: rgba(22, 27, 35, 0.96);
+      --line: rgba(255, 255, 255, 0.12);
+      --line-strong: rgba(255, 255, 255, 0.22);
+      --text: #f6f8fb;
+      --muted: #a9b1bf;
+      --cyan: #35e6d4;
+      --green: #9bff78;
+      --magenta: #ff4f9a;
+      --amber: #ffbe55;
+      --red: #ff5a66;
+      --radius: 8px;
+      --shadow: 0 18px 70px rgba(0, 0, 0, 0.48);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      width: 100%;
+      height: 100%;
+      margin: 0;
+      overflow: hidden;
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    body {
+      min-width: 320px;
+    }
+
+    #stage {
+      position: fixed;
+      inset: 0;
+      width: 100vw;
+      height: 100vh;
+      display: block;
+      background:
+        radial-gradient(circle at 20% 20%, rgba(53, 230, 212, 0.14), transparent 26%),
+        radial-gradient(circle at 75% 72%, rgba(255, 190, 85, 0.12), transparent 28%),
+        #050609;
+    }
+
+    .brand-mark {
+      position: fixed;
+      left: 18px;
+      top: 18px;
+      z-index: 3;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      pointer-events: none;
+      color: rgba(246, 248, 251, 0.92);
+      text-shadow: 0 0 22px rgba(0, 0, 0, 0.7);
+    }
+
+    .brand-mark__glyph {
+      width: 38px;
+      height: 38px;
+      display: grid;
+      place-items: center;
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      border-radius: 50%;
+      background: rgba(10, 12, 18, 0.55);
+      box-shadow: 0 0 28px rgba(53, 230, 212, 0.18);
+      font-size: 15px;
+      font-weight: 800;
+      letter-spacing: 0;
+    }
+
+    .brand-mark__copy {
+      display: grid;
+      gap: 1px;
+    }
+
+    .brand-mark strong {
+      font-size: 13px;
+      letter-spacing: 0;
+      text-transform: uppercase;
+    }
+
+    .brand-mark span {
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .control-panel {
+      position: fixed;
+      top: 18px;
+      right: 18px;
+      z-index: 5;
+      width: min(360px, calc(100vw - 28px));
+      max-height: calc(100vh - 36px);
+      display: grid;
+      grid-template-rows: auto minmax(0, 1fr);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--panel);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      overflow: hidden;
+      user-select: none;
+    }
+
+    .control-panel.is-minimized {
+      width: min(290px, calc(100vw - 28px));
+    }
+
+    .panel-header {
+      height: 48px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 0 10px 0 14px;
+      background: var(--panel-strong);
+      border-bottom: 1px solid var(--line);
+      cursor: grab;
+      touch-action: none;
+    }
+
+    .panel-header:active {
+      cursor: grabbing;
+    }
+
+    .panel-title {
+      min-width: 0;
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      font-size: 13px;
+      font-weight: 750;
+      letter-spacing: 0;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .signal-dot {
+      width: 9px;
+      height: 9px;
+      flex: 0 0 9px;
+      border-radius: 50%;
+      background: var(--cyan);
+      box-shadow: 0 0 14px rgba(53, 230, 212, 0.72);
+    }
+
+    .panel-actions {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    button,
+    .file-button {
+      min-height: 34px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      background: rgba(255, 255, 255, 0.06);
+      color: var(--text);
+      font: inherit;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0;
+      cursor: pointer;
+      transition: transform 160ms ease, border-color 160ms ease, background 160ms ease, color 160ms ease;
+    }
+
+    button:hover,
+    .file-button:hover {
+      border-color: var(--line-strong);
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    button:active,
+    .file-button:active {
+      transform: translateY(1px);
+    }
+
+    button:focus-visible,
+    .file-button:focus-visible,
+    input:focus-visible {
+      outline: 2px solid rgba(53, 230, 212, 0.75);
+      outline-offset: 2px;
+    }
+
+    .icon-only {
+      width: 34px;
+      min-width: 34px;
+      padding: 0;
+      font-size: 18px;
+      line-height: 1;
+    }
+
+    .button-row {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+    }
+
+    .button-row.three {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .button-row button,
+    .button-row .file-button {
+      width: 100%;
+      padding: 0 10px;
+    }
+
+    .file-button input {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .panel-content {
+      min-height: 0;
+      overflow-y: auto;
+      scrollbar-color: rgba(255, 255, 255, 0.22) transparent;
+    }
+
+    .control-panel.is-minimized .panel-content {
+      display: none;
+    }
+
+    .control-section {
+      padding: 14px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .control-section:last-child {
+      border-bottom: 0;
+    }
+
+    h2 {
+      margin: 0 0 10px;
+      color: #e7ecf4;
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0;
+      text-transform: uppercase;
+    }
+
+    .mode-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 7px;
+    }
+
+    .check-tile {
+      min-height: 34px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 0 9px;
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      background: rgba(255, 255, 255, 0.045);
+      cursor: pointer;
+    }
+
+    .check-tile input {
+      width: 16px;
+      height: 16px;
+      accent-color: var(--cyan);
+      flex: 0 0 auto;
+      cursor: pointer;
+    }
+
+    .check-tile span {
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      color: #e5e9ef;
+      font-size: 12px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .check-tile:has(input:checked) {
+      border-color: rgba(53, 230, 212, 0.42);
+      background: rgba(53, 230, 212, 0.09);
+    }
+
+    .range-stack {
+      display: grid;
+      gap: 12px;
+    }
+
+    .range-control {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 7px 10px;
+      align-items: center;
+    }
+
+    .range-control label {
+      min-width: 0;
+      color: #d8dee8;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .range-control output {
+      min-width: 52px;
+      color: var(--muted);
+      font-size: 12px;
+      font-variant-numeric: tabular-nums;
+      text-align: right;
+    }
+
+    .range-control input[type="range"] {
+      grid-column: 1 / -1;
+      width: 100%;
+      accent-color: var(--cyan);
+    }
+
+    .switch-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    .switch-label {
+      color: #d8dee8;
+      font-size: 12px;
+      font-weight: 750;
+    }
+
+    .switch {
+      position: relative;
+      width: 52px;
+      height: 28px;
+      flex: 0 0 auto;
+      display: inline-block;
+    }
+
+    .switch input {
+      position: absolute;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .switch span {
+      position: absolute;
+      inset: 0;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.08);
+      cursor: pointer;
+      transition: background 160ms ease, border-color 160ms ease;
+    }
+
+    .switch span::before {
+      content: "";
+      position: absolute;
+      width: 20px;
+      height: 20px;
+      left: 4px;
+      top: 3px;
+      border-radius: 50%;
+      background: #f8fafc;
+      box-shadow: 0 3px 12px rgba(0, 0, 0, 0.35);
+      transition: transform 160ms ease;
+    }
+
+    .switch input:checked + span {
+      border-color: rgba(53, 230, 212, 0.5);
+      background: rgba(53, 230, 212, 0.28);
+    }
+
+    .switch input:checked + span::before {
+      transform: translateX(23px);
+    }
+
+    .meters {
+      display: grid;
+      gap: 6px;
+      margin-top: 11px;
+    }
+
+    .meter {
+      display: grid;
+      grid-template-columns: 48px 1fr;
+      align-items: center;
+      gap: 8px;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+
+    .meter-bar {
+      height: 5px;
+      overflow: hidden;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.08);
+    }
+
+    .meter-bar span {
+      display: block;
+      width: 0%;
+      height: 100%;
+      border-radius: inherit;
+      background: linear-gradient(90deg, var(--cyan), var(--green), var(--amber), var(--magenta));
+      transition: width 90ms linear;
+    }
+
+    .status-strip {
+      position: fixed;
+      left: 18px;
+      bottom: 18px;
+      z-index: 4;
+      max-width: min(540px, calc(100vw - 36px));
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px;
+      border: 1px solid rgba(255, 255, 255, 0.11);
+      border-radius: var(--radius);
+      background: rgba(9, 11, 16, 0.7);
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.25);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      color: var(--muted);
+      font-size: 12px;
+      user-select: none;
+      pointer-events: none;
+    }
+
+    .status-strip strong {
+      color: var(--text);
+      font-weight: 800;
+    }
+
+    .status-chip {
+      width: 8px;
+      height: 8px;
+      flex: 0 0 8px;
+      border-radius: 50%;
+      background: var(--amber);
+      box-shadow: 0 0 14px rgba(255, 190, 85, 0.6);
+    }
+
+    .status-chip.live {
+      background: var(--green);
+      box-shadow: 0 0 14px rgba(155, 255, 120, 0.6);
+    }
+
+    .status-chip.error {
+      background: var(--red);
+      box-shadow: 0 0 14px rgba(255, 90, 102, 0.6);
+    }
+
+    .hidden-video {
+      position: fixed;
+      width: 1px;
+      height: 1px;
+      left: -10px;
+      top: -10px;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    @media (max-width: 720px) {
+      .brand-mark {
+        left: 12px;
+        top: auto;
+        bottom: 14px;
+      }
+
+      .brand-mark__copy {
+        display: none;
+      }
+
+      .control-panel {
+        top: 10px;
+        right: 10px;
+        width: calc(100vw - 20px);
+        max-height: 62vh;
+      }
+
+      .status-strip {
+        left: 64px;
+        right: 10px;
+        bottom: 14px;
+        max-width: none;
+      }
+
+      .mode-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+
+      .check-tile {
+        padding: 0 7px;
+      }
+
+      .check-tile span {
+        font-size: 11px;
+      }
+    }
+
+    @media (max-width: 460px) {
+      .mode-grid,
+      .button-row.three {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .status-strip {
+        font-size: 11px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <canvas id="stage" aria-label="VJ Cymatics 3D visualization"></canvas>
+
+  <div class="brand-mark" aria-hidden="true">
+    <div class="brand-mark__glyph">VJ</div>
+    <div class="brand-mark__copy">
+      <strong>VJ Cymatics 3D</strong>
+      <span>audio / video depth engine</span>
+    </div>
+  </div>
+
+  <aside class="control-panel" id="controlPanel" aria-label="Visualization controls">
+    <header class="panel-header" id="panelHeader">
+      <div class="panel-title"><span class="signal-dot"></span><span>Control Panel</span></div>
+      <div class="panel-actions">
+        <button class="icon-only" id="minimizeButton" type="button" title="Minimize" aria-label="Minimize panel">-</button>
+      </div>
+    </header>
+
+    <div class="panel-content" id="panelContent">
+      <section class="control-section">
+        <h2>Audio Input</h2>
+        <div class="button-row">
+          <button id="micButton" type="button" title="Microphone">Mic</button>
+          <label class="file-button" title="Audio file">
+            <input id="audioFile" type="file" accept="audio/mpeg,audio/wav,audio/ogg,audio/*">
+            Audio File
+          </label>
+        </div>
+        <div class="meters" aria-hidden="true">
+          <div class="meter"><span>Bass</span><div class="meter-bar"><span id="bassMeter"></span></div></div>
+          <div class="meter"><span>Mid</span><div class="meter-bar"><span id="midMeter"></span></div></div>
+          <div class="meter"><span>Treble</span><div class="meter-bar"><span id="trebleMeter"></span></div></div>
+        </div>
+      </section>
+
+      <section class="control-section">
+        <h2>Visualization Modes</h2>
+        <div class="mode-grid" id="modeGrid">
+          <label class="check-tile"><input type="checkbox" data-mode="particles" checked><span>Particles</span></label>
+          <label class="check-tile"><input type="checkbox" data-mode="wave" checked><span>Wave</span></label>
+          <label class="check-tile"><input type="checkbox" data-mode="spiral" checked><span>Spiral</span></label>
+          <label class="check-tile"><input type="checkbox" data-mode="emitter" checked><span>Emitter</span></label>
+          <label class="check-tile"><input type="checkbox" data-mode="torus" checked><span>Torus</span></label>
+          <label class="check-tile"><input type="checkbox" data-mode="torusKnot"><span>TorusKnot</span></label>
+          <label class="check-tile"><input type="checkbox" data-mode="icosahedron"><span>Icosahedron</span></label>
+          <label class="check-tile"><input type="checkbox" data-mode="octahedron"><span>Octahedron</span></label>
+          <label class="check-tile"><input type="checkbox" data-mode="triangle"><span>Triangle</span></label>
+          <label class="check-tile"><input type="checkbox" data-mode="crown"><span>Crown</span></label>
+          <label class="check-tile"><input type="checkbox" data-mode="video"><span>Video</span></label>
+        </div>
+      </section>
+
+      <section class="control-section">
+        <h2>Animation</h2>
+        <div class="switch-row">
+          <span class="switch-label">Auto Rotation</span>
+          <label class="switch" title="Auto rotation">
+            <input id="autoRotate" type="checkbox" checked>
+            <span></span>
+          </label>
+        </div>
+        <div class="range-stack">
+          <div class="range-control">
+            <label for="particleCount">Particle Count</label>
+            <output id="particleCountValue">1200</output>
+            <input id="particleCount" type="range" min="0" max="10000" step="100" value="1200">
+          </div>
+          <div class="range-control">
+            <label for="particleSize">Particle Size</label>
+            <output id="particleSizeValue">1.8</output>
+            <input id="particleSize" type="range" min="0.1" max="5" step="0.1" value="1.8">
+          </div>
+          <div class="range-control auto-only">
+            <label for="rotationSpeedX">Rotation Speed X</label>
+            <output id="rotationSpeedXValue">0.18</output>
+            <input id="rotationSpeedX" type="range" min="-1.5" max="1.5" step="0.01" value="0.18">
+          </div>
+          <div class="range-control auto-only">
+            <label for="rotationSpeedY">Rotation Speed Y</label>
+            <output id="rotationSpeedYValue">0.31</output>
+            <input id="rotationSpeedY" type="range" min="-1.5" max="1.5" step="0.01" value="0.31">
+          </div>
+          <div class="range-control manual-only">
+            <label for="manualRotationX">Manual Rotation X</label>
+            <output id="manualRotationXValue">-10</output>
+            <input id="manualRotationX" type="range" min="-180" max="180" step="1" value="-10">
+          </div>
+          <div class="range-control manual-only">
+            <label for="manualRotationY">Manual Rotation Y</label>
+            <output id="manualRotationYValue">20</output>
+            <input id="manualRotationY" type="range" min="-180" max="180" step="1" value="20">
+          </div>
+          <div class="range-control">
+            <label for="glowStrength">Glow Strength</label>
+            <output id="glowStrengthValue">1.35</output>
+            <input id="glowStrength" type="range" min="0" max="3" step="0.05" value="1.35">
+          </div>
+          <div class="range-control">
+            <label for="sparkPower">Spark Power</label>
+            <output id="sparkPowerValue">1.30</output>
+            <input id="sparkPower" type="range" min="0.4" max="2.5" step="0.05" value="1.3">
+          </div>
+        </div>
+      </section>
+
+      <section class="control-section">
+        <h2>Video Input</h2>
+        <div class="button-row">
+          <button id="webcamButton" type="button" title="ウェブカメラ">ウェブカメラ</button>
+          <label class="file-button" title="Video file">
+            <input id="videoFile" type="file" accept="video/mp4,video/webm,video/ogg,video/*">
+            Video File
+          </label>
+        </div>
+        <div class="range-stack" style="margin-top: 12px;">
+          <div class="range-control">
+            <label for="videoResolution">Video Resolution</label>
+            <output id="videoResolutionValue">320</output>
+            <input id="videoResolution" type="range" min="120" max="480" step="20" value="320">
+          </div>
+        </div>
+      </section>
+
+      <section class="control-section">
+        <h2>Presets & Export</h2>
+        <div class="button-row three">
+          <button id="savePreset" type="button">Save</button>
+          <button id="loadPreset" type="button">Load</button>
+          <button id="downloadPreset" type="button">JSON</button>
+        </div>
+      </section>
+    </div>
+  </aside>
+
+  <div class="status-strip" id="statusStrip">
+    <span class="status-chip" id="statusChip"></span>
+    <span><strong id="statusTitle">Ready</strong> <span id="statusText">No audio source connected</span></span>
+  </div>
+
+  <audio id="audioElement" crossorigin="anonymous"></audio>
+  <video id="videoElement" class="hidden-video" muted playsinline loop></video>
+
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js"></script>
+  <script>
+    (function () {
+      "use strict";
+
+      var CONFIG_KEY = "vj-cymatics-3d-config-v1";
+      var MODE_IDS = [
+        "particles",
+        "wave",
+        "spiral",
+        "emitter",
+        "torus",
+        "torusKnot",
+        "icosahedron",
+        "octahedron",
+        "triangle",
+        "crown",
+        "video"
+      ];
+
+      var config = {
+        particleCount: 1200,
+        particleSize: 1.8,
+        rotationSpeedX: 0.18,
+        rotationSpeedY: 0.31,
+        autoRotate: true,
+        manualRotationX: -10,
+        manualRotationY: 20,
+        glowStrength: 1.35,
+        sparkPower: 1.3,
+        videoWidth: 320,
+        videoHeight: 240,
+        enabledModes: ["particles", "wave", "spiral", "emitter", "torus"]
+      };
+
+      var SCREEN_VERTEX_SHADER = [
+        "varying vec2 vUv;",
+        "void main() {",
+        "  vUv = uv;",
+        "  gl_Position = vec4(position.xy, 0.0, 1.0);",
+        "}"
+      ].join("\n");
+
+      var BRIGHT_FRAGMENT_SHADER = [
+        "precision highp float;",
+        "uniform sampler2D tDiffuse;",
+        "uniform float threshold;",
+        "uniform float intensity;",
+        "varying vec2 vUv;",
+        "void main() {",
+        "  vec4 color = texture2D(tDiffuse, vUv);",
+        "  float luma = dot(color.rgb, vec3(0.299, 0.587, 0.114));",
+        "  float mask = smoothstep(threshold, threshold + 0.42, luma);",
+        "  gl_FragColor = vec4(color.rgb * mask * intensity, 1.0);",
+        "}"
+      ].join("\n");
+
+      var BLUR_FRAGMENT_SHADER = [
+        "precision highp float;",
+        "uniform sampler2D tDiffuse;",
+        "uniform vec2 direction;",
+        "uniform vec2 resolution;",
+        "varying vec2 vUv;",
+        "void main() {",
+        "  vec2 texel = direction / resolution;",
+        "  vec3 color = texture2D(tDiffuse, vUv).rgb * 0.227027;",
+        "  color += texture2D(tDiffuse, vUv + texel * 1.384615).rgb * 0.316216;",
+        "  color += texture2D(tDiffuse, vUv - texel * 1.384615).rgb * 0.316216;",
+        "  color += texture2D(tDiffuse, vUv + texel * 3.230769).rgb * 0.070270;",
+        "  color += texture2D(tDiffuse, vUv - texel * 3.230769).rgb * 0.070270;",
+        "  gl_FragColor = vec4(color, 1.0);",
+        "}"
+      ].join("\n");
+
+      var FINAL_FRAGMENT_SHADER = [
+        "precision highp float;",
+        "uniform sampler2D tScene;",
+        "uniform sampler2D tBloom;",
+        "uniform float strength;",
+        "uniform float saturation;",
+        "uniform float time;",
+        "varying vec2 vUv;",
+        "void main() {",
+        "  vec3 scene = texture2D(tScene, vUv).rgb;",
+        "  vec2 split = vec2(0.0018 + sin(time * 1.7) * 0.0007, 0.0);",
+        "  vec3 bloom;",
+        "  bloom.r = texture2D(tBloom, vUv + split).r;",
+        "  bloom.g = texture2D(tBloom, vUv).g;",
+        "  bloom.b = texture2D(tBloom, vUv - split).b;",
+        "  vec3 color = scene + bloom * strength + pow(max(bloom, 0.0), vec3(1.6)) * strength * 0.48;",
+        "  float luma = dot(color, vec3(0.2126, 0.7152, 0.0722));",
+        "  color = mix(vec3(luma), color, saturation);",
+        "  float vignette = smoothstep(0.92, 0.28, distance(vUv, vec2(0.5)));",
+        "  color *= 0.84 + vignette * 0.22;",
+        "  gl_FragColor = vec4(color, 1.0);",
+        "}"
+      ].join("\n");
+
+      var els = {
+        canvas: document.getElementById("stage"),
+        panel: document.getElementById("controlPanel"),
+        header: document.getElementById("panelHeader"),
+        minimize: document.getElementById("minimizeButton"),
+        micButton: document.getElementById("micButton"),
+        webcamButton: document.getElementById("webcamButton"),
+        audioFile: document.getElementById("audioFile"),
+        videoFile: document.getElementById("videoFile"),
+        audioElement: document.getElementById("audioElement"),
+        videoElement: document.getElementById("videoElement"),
+        statusChip: document.getElementById("statusChip"),
+        statusTitle: document.getElementById("statusTitle"),
+        statusText: document.getElementById("statusText"),
+        bassMeter: document.getElementById("bassMeter"),
+        midMeter: document.getElementById("midMeter"),
+        trebleMeter: document.getElementById("trebleMeter"),
+        autoRotate: document.getElementById("autoRotate"),
+        particleCount: document.getElementById("particleCount"),
+        particleCountValue: document.getElementById("particleCountValue"),
+        particleSize: document.getElementById("particleSize"),
+        particleSizeValue: document.getElementById("particleSizeValue"),
+        rotationSpeedX: document.getElementById("rotationSpeedX"),
+        rotationSpeedXValue: document.getElementById("rotationSpeedXValue"),
+        rotationSpeedY: document.getElementById("rotationSpeedY"),
+        rotationSpeedYValue: document.getElementById("rotationSpeedYValue"),
+        manualRotationX: document.getElementById("manualRotationX"),
+        manualRotationXValue: document.getElementById("manualRotationXValue"),
+        manualRotationY: document.getElementById("manualRotationY"),
+        manualRotationYValue: document.getElementById("manualRotationYValue"),
+        glowStrength: document.getElementById("glowStrength"),
+        glowStrengthValue: document.getElementById("glowStrengthValue"),
+        sparkPower: document.getElementById("sparkPower"),
+        sparkPowerValue: document.getElementById("sparkPowerValue"),
+        videoResolution: document.getElementById("videoResolution"),
+        videoResolutionValue: document.getElementById("videoResolutionValue"),
+        savePreset: document.getElementById("savePreset"),
+        loadPreset: document.getElementById("loadPreset"),
+        downloadPreset: document.getElementById("downloadPreset")
+      };
+
+      var state = {
+        renderer: null,
+        post: null,
+        scene: null,
+        camera: null,
+        root: null,
+        atmosphere: null,
+        glowTexture: null,
+        sparkTexture: null,
+        clock: null,
+        modes: Object.create(null),
+        audioContext: null,
+        analyser: null,
+        outputGain: null,
+        outputConnected: false,
+        audioSource: null,
+        audioInputKind: "idle",
+        mediaElementSource: null,
+        micStream: null,
+        videoStream: null,
+        frequencyData: null,
+        waveformData: null,
+        videoCanvas: document.createElement("canvas"),
+        videoContext: null,
+        videoReady: false,
+        rebuildTimer: 0,
+        levels: {
+          bass: 0,
+          mid: 0,
+          treble: 0,
+          overall: 0
+        },
+        targetRotation: {
+          x: 0,
+          y: 0
+        }
+      };
+
+      if (!window.THREE) {
+        setStatus("Three.js unavailable", "Check the CDN connection", "error");
+        return;
+      }
+
+      init();
+
+      function init() {
+        state.videoCanvas.width = config.videoWidth;
+        state.videoCanvas.height = config.videoHeight;
+        state.videoContext = state.videoCanvas.getContext("2d", { willReadFrequently: true });
+
+        state.renderer = new THREE.WebGLRenderer({
+          canvas: els.canvas,
+          antialias: true,
+          alpha: false,
+          preserveDrawingBuffer: true
+        });
+        state.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+        state.renderer.setSize(window.innerWidth, window.innerHeight);
+        state.renderer.setClearColor(0x050609, 1);
+        if ("outputEncoding" in state.renderer) {
+          state.renderer.outputEncoding = THREE.sRGBEncoding;
+        }
+        if ("toneMapping" in state.renderer) {
+          state.renderer.toneMapping = THREE.ACESFilmicToneMapping;
+          state.renderer.toneMappingExposure = 1.12;
+        }
+        state.post = createGlowPipeline();
+
+        state.scene = new THREE.Scene();
+        state.scene.fog = new THREE.FogExp2(0x050609, 0.0011);
+
+        state.camera = new THREE.PerspectiveCamera(58, window.innerWidth / window.innerHeight, 1, 2600);
+        state.camera.position.set(0, 72, 620);
+        state.camera.lookAt(0, 0, 0);
+
+        state.root = new THREE.Group();
+        state.scene.add(state.root);
+
+        addLights();
+        addAtmosphere();
+
+        state.clock = new THREE.Clock();
+
+        bindControls();
+        syncControlsFromConfig();
+        syncModes();
+        window.addEventListener("resize", resize);
+
+        setStatus("Ready", "No audio source connected", "idle");
+        animate();
+      }
+
+      function addLights() {
+        state.scene.add(new THREE.AmbientLight(0x8ca0b8, 0.42));
+
+        var key = new THREE.PointLight(0x35e6d4, 1.45, 1200);
+        key.position.set(-260, 260, 420);
+        state.scene.add(key);
+
+        var fill = new THREE.PointLight(0xffbe55, 1.0, 1000);
+        fill.position.set(320, -120, 260);
+        state.scene.add(fill);
+
+        var rim = new THREE.PointLight(0xff4f9a, 0.78, 1100);
+        rim.position.set(0, 280, -420);
+        state.scene.add(rim);
+      }
+
+      function createGlowPipeline() {
+        var dpr = Math.min(window.devicePixelRatio || 1, 2);
+        var width = Math.max(1, Math.floor(window.innerWidth * dpr));
+        var height = Math.max(1, Math.floor(window.innerHeight * dpr));
+        var bloomWidth = Math.max(1, Math.floor(width * 0.5));
+        var bloomHeight = Math.max(1, Math.floor(height * 0.5));
+        var targetOptions = {
+          minFilter: THREE.LinearFilter,
+          magFilter: THREE.LinearFilter,
+          format: THREE.RGBAFormat,
+          depthBuffer: false,
+          stencilBuffer: false
+        };
+        var sceneTarget = new THREE.WebGLRenderTarget(width, height, targetOptions);
+        var bloomTargetA = new THREE.WebGLRenderTarget(bloomWidth, bloomHeight, targetOptions);
+        var bloomTargetB = new THREE.WebGLRenderTarget(bloomWidth, bloomHeight, targetOptions);
+        var postScene = new THREE.Scene();
+        var postCamera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
+        var quad = new THREE.Mesh(new THREE.PlaneBufferGeometry(2, 2), null);
+        postScene.add(quad);
+
+        var brightMaterial = new THREE.ShaderMaterial({
+          uniforms: {
+            tDiffuse: { value: null },
+            threshold: { value: 0.13 },
+            intensity: { value: 1.0 }
+          },
+          vertexShader: SCREEN_VERTEX_SHADER,
+          fragmentShader: BRIGHT_FRAGMENT_SHADER,
+          depthTest: false,
+          depthWrite: false
+        });
+
+        var blurMaterial = new THREE.ShaderMaterial({
+          uniforms: {
+            tDiffuse: { value: null },
+            direction: { value: new THREE.Vector2(1, 0) },
+            resolution: { value: new THREE.Vector2(bloomWidth, bloomHeight) }
+          },
+          vertexShader: SCREEN_VERTEX_SHADER,
+          fragmentShader: BLUR_FRAGMENT_SHADER,
+          depthTest: false,
+          depthWrite: false
+        });
+
+        var finalMaterial = new THREE.ShaderMaterial({
+          uniforms: {
+            tScene: { value: null },
+            tBloom: { value: null },
+            strength: { value: config.glowStrength },
+            saturation: { value: 1.15 },
+            time: { value: 0 }
+          },
+          vertexShader: SCREEN_VERTEX_SHADER,
+          fragmentShader: FINAL_FRAGMENT_SHADER,
+          depthTest: false,
+          depthWrite: false
+        });
+
+        return {
+          sceneTarget: sceneTarget,
+          bloomTargetA: bloomTargetA,
+          bloomTargetB: bloomTargetB,
+          scene: postScene,
+          camera: postCamera,
+          quad: quad,
+          brightMaterial: brightMaterial,
+          blurMaterial: blurMaterial,
+          finalMaterial: finalMaterial
+        };
+      }
+
+      function getGlowTexture() {
+        if (state.glowTexture) {
+          return state.glowTexture;
+        }
+        var canvas = document.createElement("canvas");
+        canvas.width = 128;
+        canvas.height = 128;
+        var context = canvas.getContext("2d");
+        var gradient = context.createRadialGradient(64, 64, 0, 64, 64, 64);
+        gradient.addColorStop(0, "rgba(255, 255, 255, 1)");
+        gradient.addColorStop(0.16, "rgba(255, 255, 255, 0.86)");
+        gradient.addColorStop(0.42, "rgba(255, 255, 255, 0.28)");
+        gradient.addColorStop(1, "rgba(255, 255, 255, 0)");
+        context.fillStyle = gradient;
+        context.fillRect(0, 0, 128, 128);
+        state.glowTexture = new THREE.CanvasTexture(canvas);
+        state.glowTexture.needsUpdate = true;
+        return state.glowTexture;
+      }
+
+      function getSparkTexture() {
+        if (state.sparkTexture) {
+          return state.sparkTexture;
+        }
+        var canvas = document.createElement("canvas");
+        canvas.width = 96;
+        canvas.height = 96;
+        var context = canvas.getContext("2d");
+        var gradient = context.createRadialGradient(48, 48, 0, 48, 48, 48);
+        gradient.addColorStop(0, "rgba(255, 255, 255, 1)");
+        gradient.addColorStop(0.1, "rgba(255, 255, 255, 0.95)");
+        gradient.addColorStop(0.24, "rgba(255, 255, 255, 0.55)");
+        gradient.addColorStop(1, "rgba(255, 255, 255, 0)");
+        context.fillStyle = gradient;
+        context.fillRect(0, 0, 96, 96);
+        state.sparkTexture = new THREE.CanvasTexture(canvas);
+        state.sparkTexture.needsUpdate = true;
+        return state.sparkTexture;
+      }
+
+      function createGlowSprite(colorHex, size) {
+        var material = new THREE.SpriteMaterial({
+          map: getGlowTexture(),
+          color: colorHex,
+          transparent: true,
+          opacity: 0.42,
+          depthWrite: false,
+          blending: THREE.AdditiveBlending
+        });
+        var sprite = new THREE.Sprite(material);
+        sprite.scale.set(size, size, 1);
+        return sprite;
+      }
+
+      function addAtmosphere() {
+        var count = 320;
+        var positions = new Float32Array(count * 3);
+        var colors = new Float32Array(count * 3);
+        var color = new THREE.Color();
+
+        for (var i = 0; i < count; i += 1) {
+          var radius = 620 + Math.random() * 520;
+          var theta = Math.random() * Math.PI * 2;
+          var phi = Math.acos(THREE.MathUtils.randFloatSpread(2));
+          positions[i * 3] = radius * Math.sin(phi) * Math.cos(theta);
+          positions[i * 3 + 1] = radius * Math.sin(phi) * Math.sin(theta);
+          positions[i * 3 + 2] = radius * Math.cos(phi);
+          color.setHSL(0.46 + Math.random() * 0.18, 0.45, 0.35 + Math.random() * 0.26);
+          colors[i * 3] = color.r;
+          colors[i * 3 + 1] = color.g;
+          colors[i * 3 + 2] = color.b;
+        }
+
+        var geometry = new THREE.BufferGeometry();
+        geometry.setAttribute("position", new THREE.BufferAttribute(positions, 3));
+        geometry.setAttribute("color", new THREE.BufferAttribute(colors, 3));
+        var material = new THREE.PointsMaterial({
+          size: 1.35,
+          map: getSparkTexture(),
+          vertexColors: true,
+          transparent: true,
+          opacity: 0.42,
+          depthWrite: false,
+          blending: THREE.AdditiveBlending
+        });
+        var stars = new THREE.Points(geometry, material);
+        stars.name = "atmosphere";
+        state.atmosphere = stars;
+        state.scene.add(stars);
+      }
+
+      function bindControls() {
+        els.minimize.addEventListener("click", function () {
+          els.panel.classList.toggle("is-minimized");
+          els.minimize.textContent = els.panel.classList.contains("is-minimized") ? "+" : "-";
+          els.minimize.setAttribute(
+            "aria-label",
+            els.panel.classList.contains("is-minimized") ? "Maximize panel" : "Minimize panel"
+          );
+        });
+
+        bindPanelDrag();
+
+        document.querySelectorAll("[data-mode]").forEach(function (checkbox) {
+          checkbox.addEventListener("change", function () {
+            var id = checkbox.getAttribute("data-mode");
+            if (checkbox.checked) {
+              if (config.enabledModes.indexOf(id) === -1) {
+                config.enabledModes.push(id);
+              }
+            } else {
+              config.enabledModes = config.enabledModes.filter(function (mode) {
+                return mode !== id;
+              });
+            }
+            syncModes();
+          });
+        });
+
+        bindRange(els.particleCount, els.particleCountValue, "particleCount", 0, function (value) {
+          return String(Math.round(value));
+        }, scheduleParticleRebuild);
+
+        bindRange(els.particleSize, els.particleSizeValue, "particleSize", 1, function (value) {
+          return value.toFixed(1);
+        }, updatePointSizes);
+
+        bindRange(els.rotationSpeedX, els.rotationSpeedXValue, "rotationSpeedX", 2, function (value) {
+          return value.toFixed(2);
+        });
+
+        bindRange(els.rotationSpeedY, els.rotationSpeedYValue, "rotationSpeedY", 2, function (value) {
+          return value.toFixed(2);
+        });
+
+        bindRange(els.manualRotationX, els.manualRotationXValue, "manualRotationX", 0, function (value) {
+          return String(Math.round(value));
+        }, updateManualRotationTarget);
+
+        bindRange(els.manualRotationY, els.manualRotationYValue, "manualRotationY", 0, function (value) {
+          return String(Math.round(value));
+        }, updateManualRotationTarget);
+
+        bindRange(els.glowStrength, els.glowStrengthValue, "glowStrength", 2, function (value) {
+          return value.toFixed(2);
+        });
+
+        bindRange(els.sparkPower, els.sparkPowerValue, "sparkPower", 2, function (value) {
+          return value.toFixed(2);
+        });
+
+        bindRange(els.videoResolution, els.videoResolutionValue, "videoWidth", 0, function (value) {
+          return String(Math.round(value));
+        }, updateVideoResolution);
+
+        els.autoRotate.addEventListener("change", function () {
+          config.autoRotate = els.autoRotate.checked;
+          updateRotationControls();
+          updateManualRotationTarget();
+        });
+
+        els.micButton.addEventListener("click", startMicrophone);
+        els.webcamButton.addEventListener("click", startWebcam);
+        els.audioFile.addEventListener("change", loadAudioFile);
+        els.videoFile.addEventListener("change", loadVideoFile);
+
+        els.savePreset.addEventListener("click", savePreset);
+        els.loadPreset.addEventListener("click", loadPreset);
+        els.downloadPreset.addEventListener("click", downloadPreset);
+      }
+
+      function bindPanelDrag() {
+        var dragging = false;
+        var startX = 0;
+        var startY = 0;
+        var startLeft = 0;
+        var startTop = 0;
+
+        els.header.addEventListener("pointerdown", function (event) {
+          if (event.target.closest("button")) {
+            return;
+          }
+          dragging = true;
+          var rect = els.panel.getBoundingClientRect();
+          startX = event.clientX;
+          startY = event.clientY;
+          startLeft = rect.left;
+          startTop = rect.top;
+          els.header.setPointerCapture(event.pointerId);
+        });
+
+        els.header.addEventListener("pointermove", function (event) {
+          if (!dragging) {
+            return;
+          }
+          var nextLeft = startLeft + event.clientX - startX;
+          var nextTop = startTop + event.clientY - startY;
+          var maxLeft = window.innerWidth - els.panel.offsetWidth - 8;
+          var maxTop = window.innerHeight - els.panel.offsetHeight - 8;
+          els.panel.style.left = clamp(nextLeft, 8, Math.max(8, maxLeft)) + "px";
+          els.panel.style.top = clamp(nextTop, 8, Math.max(8, maxTop)) + "px";
+          els.panel.style.right = "auto";
+        });
+
+        els.header.addEventListener("pointerup", function (event) {
+          dragging = false;
+          if (els.header.hasPointerCapture(event.pointerId)) {
+            els.header.releasePointerCapture(event.pointerId);
+          }
+        });
+      }
+
+      function bindRange(input, output, key, decimals, formatter, callback) {
+        input.addEventListener("input", function () {
+          var value = Number(input.value);
+          if (key === "videoWidth") {
+            config.videoWidth = value;
+            config.videoHeight = Math.round(value * 0.75);
+          } else {
+            config[key] = decimals === 0 ? Math.round(value) : value;
+          }
+          output.textContent = formatter(value);
+          if (callback) {
+            callback();
+          }
+        });
+      }
+
+      function syncControlsFromConfig() {
+        els.particleCount.value = config.particleCount;
+        els.particleCountValue.textContent = String(config.particleCount);
+        els.particleSize.value = config.particleSize;
+        els.particleSizeValue.textContent = config.particleSize.toFixed(1);
+        els.rotationSpeedX.value = config.rotationSpeedX;
+        els.rotationSpeedXValue.textContent = config.rotationSpeedX.toFixed(2);
+        els.rotationSpeedY.value = config.rotationSpeedY;
+        els.rotationSpeedYValue.textContent = config.rotationSpeedY.toFixed(2);
+        els.manualRotationX.value = config.manualRotationX;
+        els.manualRotationXValue.textContent = String(config.manualRotationX);
+        els.manualRotationY.value = config.manualRotationY;
+        els.manualRotationYValue.textContent = String(config.manualRotationY);
+        els.glowStrength.value = config.glowStrength;
+        els.glowStrengthValue.textContent = config.glowStrength.toFixed(2);
+        els.sparkPower.value = config.sparkPower;
+        els.sparkPowerValue.textContent = config.sparkPower.toFixed(2);
+        els.autoRotate.checked = config.autoRotate;
+        els.videoResolution.value = config.videoWidth;
+        els.videoResolutionValue.textContent = String(config.videoWidth);
+
+        document.querySelectorAll("[data-mode]").forEach(function (checkbox) {
+          checkbox.checked = config.enabledModes.indexOf(checkbox.getAttribute("data-mode")) !== -1;
+        });
+
+        updateRotationControls();
+        updateManualRotationTarget();
+      }
+
+      function updateRotationControls() {
+        document.querySelectorAll(".auto-only").forEach(function (control) {
+          control.style.display = config.autoRotate ? "grid" : "none";
+        });
+        document.querySelectorAll(".manual-only").forEach(function (control) {
+          control.style.display = config.autoRotate ? "none" : "grid";
+        });
+      }
+
+      function updateManualRotationTarget() {
+        state.targetRotation.x = THREE.MathUtils.degToRad(config.manualRotationX);
+        state.targetRotation.y = THREE.MathUtils.degToRad(config.manualRotationY);
+      }
+
+      function updateVideoResolution() {
+        state.videoCanvas.width = config.videoWidth;
+        state.videoCanvas.height = config.videoHeight;
+      }
+
+      function syncModes() {
+        var enabled = Object.create(null);
+        config.enabledModes.forEach(function (id) {
+          enabled[id] = true;
+          ensureMode(id);
+        });
+
+        MODE_IDS.forEach(function (id) {
+          if (state.modes[id] && state.modes[id].object) {
+            state.modes[id].object.visible = !!enabled[id];
+          }
+        });
+      }
+
+      function ensureMode(id) {
+        if (state.modes[id]) {
+          return state.modes[id];
+        }
+
+        var mode = null;
+        if (id === "particles") {
+          mode = createParticlesMode();
+        } else if (id === "wave") {
+          mode = createWaveMode();
+        } else if (id === "spiral") {
+          mode = createSpiralMode();
+        } else if (id === "emitter") {
+          mode = createEmitterMode();
+        } else if (id === "triangle") {
+          mode = createTriangleMode();
+        } else if (id === "crown") {
+          mode = createCymaticCrownMode();
+        } else if (id === "video") {
+          mode = createVideoMode();
+        } else if (id === "torus" || id === "torusKnot" || id === "icosahedron" || id === "octahedron") {
+          mode = createMeshMode(id);
+        }
+
+        if (mode) {
+          state.modes[id] = mode;
+          if (mode.attachToScene) {
+            state.scene.add(mode.object);
+          } else {
+            state.root.add(mode.object);
+          }
+        }
+        return mode;
+      }
+
+      function createParticlesMode() {
+        var count = Math.max(0, Math.round(config.particleCount));
+        var positions = new Float32Array(count * 3);
+        var bases = new Float32Array(count * 3);
+        var colors = new Float32Array(count * 3);
+        var color = new THREE.Color();
+
+        for (var i = 0; i < count; i += 1) {
+          var radius = 55 + Math.pow(Math.random(), 0.55) * 235;
+          var theta = Math.random() * Math.PI * 2;
+          var phi = Math.acos(THREE.MathUtils.randFloatSpread(2));
+          var x = radius * Math.sin(phi) * Math.cos(theta);
+          var y = radius * Math.sin(phi) * Math.sin(theta);
+          var z = radius * Math.cos(phi);
+          positions[i * 3] = bases[i * 3] = x;
+          positions[i * 3 + 1] = bases[i * 3 + 1] = y;
+          positions[i * 3 + 2] = bases[i * 3 + 2] = z;
+          color.setHSL((0.46 + i / Math.max(1, count) * 0.28) % 1, 0.74, 0.52);
+          colors[i * 3] = color.r;
+          colors[i * 3 + 1] = color.g;
+          colors[i * 3 + 2] = color.b;
+        }
+
+        var geometry = new THREE.BufferGeometry();
+        geometry.setAttribute("position", new THREE.BufferAttribute(positions, 3));
+        geometry.setAttribute("color", new THREE.BufferAttribute(colors, 3));
+
+        var material = new THREE.PointsMaterial({
+          size: config.particleSize * 0.8,
+          map: getSparkTexture(),
+          vertexColors: true,
+          transparent: true,
+          opacity: 0.96,
+          depthWrite: false,
+          blending: THREE.AdditiveBlending
+        });
+
+        var glowMaterial = new THREE.PointsMaterial({
+          size: config.particleSize * 6.2,
+          map: getGlowTexture(),
+          vertexColors: true,
+          transparent: true,
+          opacity: 0.34,
+          depthWrite: false,
+          blending: THREE.AdditiveBlending
+        });
+
+        var points = new THREE.Points(geometry, material);
+        points.name = "particles-core";
+        var glow = new THREE.Points(geometry, glowMaterial);
+        glow.name = "particles-glow";
+        var group = new THREE.Group();
+        group.name = "particles";
+        group.add(glow);
+        group.add(points);
+
+        return {
+          object: group,
+          update: function (delta, time) {
+            var pos = geometry.attributes.position.array;
+            var col = geometry.attributes.color.array;
+            var total = count || 1;
+            for (var i = 0; i < count; i += 1) {
+              var idx = i * 3;
+              var norm = i / total;
+              var freq = sampleFrequency(norm);
+              var pulse = state.levels.overall * 0.65 + freq * 0.85;
+              var wave = Math.sin(time * 1.8 + bases[idx] * 0.013 + bases[idx + 1] * 0.011);
+              pos[idx] = bases[idx] * (1 + state.levels.bass * 0.12);
+              pos[idx + 1] = bases[idx + 1] * (1 + state.levels.mid * 0.09);
+              pos[idx + 2] = bases[idx + 2] + wave * 48 * pulse + (freq - 0.34) * 96;
+              color.setHSL((0.47 + norm * 0.22 + state.levels.bass * 0.08 + freq * 0.12) % 1, 0.78, 0.42 + freq * 0.28);
+              col[idx] = color.r;
+              col[idx + 1] = color.g;
+              col[idx + 2] = color.b;
+            }
+            geometry.attributes.position.needsUpdate = true;
+            geometry.attributes.color.needsUpdate = true;
+            material.size = config.particleSize * (0.8 + state.levels.treble * 1.65);
+            glowMaterial.size = config.particleSize * (5.2 + state.levels.treble * 5.8 + config.sparkPower * 0.8);
+            glowMaterial.opacity = clamp(0.22 + state.levels.overall * 0.46, 0.18, 0.72);
+            group.rotation.y += delta * (0.08 + state.levels.mid * 0.42);
+            group.rotation.z += delta * state.levels.bass * 0.18;
+          }
+        };
+      }
+
+      function createWaveMode() {
+        var count = 384;
+        var positions = new Float32Array(count * 3);
+        var colors = new Float32Array(count * 3);
+        var color = new THREE.Color();
+
+        for (var i = 0; i < count; i += 1) {
+          var x = -285 + i / (count - 1) * 570;
+          positions[i * 3] = x;
+          positions[i * 3 + 1] = -190;
+          positions[i * 3 + 2] = 0;
+          color.setHSL(0.50 + i / count * 0.24, 0.86, 0.58);
+          colors[i * 3] = color.r;
+          colors[i * 3 + 1] = color.g;
+          colors[i * 3 + 2] = color.b;
+        }
+
+        var geometry = new THREE.BufferGeometry();
+        geometry.setAttribute("position", new THREE.BufferAttribute(positions, 3));
+        geometry.setAttribute("color", new THREE.BufferAttribute(colors, 3));
+
+        var material = new THREE.LineBasicMaterial({
+          vertexColors: true,
+          transparent: true,
+          opacity: 0.94,
+          blending: THREE.AdditiveBlending
+        });
+
+        var glowMaterial = new THREE.PointsMaterial({
+          size: config.particleSize * 5,
+          map: getGlowTexture(),
+          vertexColors: true,
+          transparent: true,
+          opacity: 0.38,
+          depthWrite: false,
+          blending: THREE.AdditiveBlending
+        });
+
+        var line = new THREE.Line(geometry, material);
+        line.name = "wave-line";
+        var glow = new THREE.Points(geometry, glowMaterial);
+        glow.name = "wave-glow";
+        var group = new THREE.Group();
+        group.name = "wave";
+        group.add(glow);
+        group.add(line);
+
+        return {
+          object: group,
+          update: function (delta, time) {
+            renderWaveform(geometry, material, count, time);
+            glowMaterial.size = config.particleSize * (4.2 + state.levels.treble * 4.4);
+            glowMaterial.opacity = clamp(0.25 + state.levels.mid * 0.42, 0.18, 0.7);
+          }
+        };
+      }
+
+      function renderWaveform(geometry, material, count, time) {
+        if (config.enabledModes.indexOf("wave") === -1) {
+          return;
+        }
+
+        var pos = geometry.attributes.position.array;
+        var col = geometry.attributes.color.array;
+        var color = new THREE.Color();
+
+        for (var i = 0; i < count; i += 1) {
+          var sourceIndex = Math.floor(i / (count - 1) * ((state.waveformData ? state.waveformData.length : count) - 1));
+          var sample = state.waveformData ? (state.waveformData[sourceIndex] - 128) / 128 : Math.sin(time * 3 + i * 0.08) * 0.28;
+          var freq = sampleFrequency(i / count);
+          var y = -190 + sample * 125 * (1 + state.levels.mid * 0.65);
+          var z = Math.cos(i * 0.035 + time * 2.1) * 34 * (state.levels.bass + freq * 0.55);
+          pos[i * 3 + 1] = y;
+          pos[i * 3 + 2] = z;
+          color.setHSL((0.48 + freq * 0.18 + i / count * 0.18) % 1, 0.88, 0.46 + Math.abs(sample) * 0.28);
+          col[i * 3] = color.r;
+          col[i * 3 + 1] = color.g;
+          col[i * 3 + 2] = color.b;
+        }
+
+        geometry.attributes.position.needsUpdate = true;
+        geometry.attributes.color.needsUpdate = true;
+        material.opacity = 0.62 + state.levels.treble * 0.36;
+      }
+
+      function createSpiralMode() {
+        var count = Math.max(0, Math.round(config.particleCount));
+        var positions = new Float32Array(count * 3);
+        var colors = new Float32Array(count * 3);
+        var seeds = new Float32Array(count * 3);
+        var color = new THREE.Color();
+
+        for (var i = 0; i < count; i += 1) {
+          var t = i / Math.max(1, count - 1);
+          var angle = i * 0.28;
+          var radius = 20 + t * 230;
+          seeds[i * 3] = angle;
+          seeds[i * 3 + 1] = radius;
+          seeds[i * 3 + 2] = -175 + t * 350;
+          positions[i * 3] = Math.cos(angle) * radius;
+          positions[i * 3 + 1] = seeds[i * 3 + 2];
+          positions[i * 3 + 2] = Math.sin(angle) * radius;
+          color.setHSL((0.04 + t * 0.58) % 1, 0.82, 0.56);
+          colors[i * 3] = color.r;
+          colors[i * 3 + 1] = color.g;
+          colors[i * 3 + 2] = color.b;
+        }
+
+        var geometry = new THREE.BufferGeometry();
+        geometry.setAttribute("position", new THREE.BufferAttribute(positions, 3));
+        geometry.setAttribute("color", new THREE.BufferAttribute(colors, 3));
+
+        var material = new THREE.PointsMaterial({
+          size: config.particleSize * 0.95,
+          map: getSparkTexture(),
+          vertexColors: true,
+          transparent: true,
+          opacity: 0.86,
+          depthWrite: false,
+          blending: THREE.AdditiveBlending
+        });
+
+        var glowMaterial = new THREE.PointsMaterial({
+          size: config.particleSize * 6.8,
+          map: getGlowTexture(),
+          vertexColors: true,
+          transparent: true,
+          opacity: 0.3,
+          depthWrite: false,
+          blending: THREE.AdditiveBlending
+        });
+
+        var points = new THREE.Points(geometry, material);
+        points.name = "spiral-core";
+        var glow = new THREE.Points(geometry, glowMaterial);
+        glow.name = "spiral-glow";
+        var group = new THREE.Group();
+        group.name = "spiral";
+        group.add(glow);
+        group.add(points);
+
+        return {
+          object: group,
+          update: function (delta, time) {
+            var pos = geometry.attributes.position.array;
+            var col = geometry.attributes.color.array;
+            var total = count || 1;
+            for (var i = 0; i < count; i += 1) {
+              var idx = i * 3;
+              var t = i / total;
+              var freq = sampleFrequency(t);
+              var radius = seeds[idx + 1] * (1 + state.levels.bass * 0.25 + freq * 0.18);
+              var angle = seeds[idx] + time * (0.35 + state.levels.mid * 0.55) + freq * 0.8;
+              pos[idx] = Math.cos(angle) * radius;
+              pos[idx + 1] = seeds[idx + 2] + Math.sin(time * 2 + t * 18) * 24 * (state.levels.treble + freq);
+              pos[idx + 2] = Math.sin(angle) * radius;
+              color.setHSL((0.08 + t * 0.52 + state.levels.treble * 0.12) % 1, 0.82, 0.42 + freq * 0.32);
+              col[idx] = color.r;
+              col[idx + 1] = color.g;
+              col[idx + 2] = color.b;
+            }
+            geometry.attributes.position.needsUpdate = true;
+            geometry.attributes.color.needsUpdate = true;
+            material.size = config.particleSize * (0.95 + state.levels.treble * 1.5);
+            glowMaterial.size = config.particleSize * (5.8 + state.levels.treble * 5.2 + config.sparkPower);
+            glowMaterial.opacity = clamp(0.2 + state.levels.overall * 0.48, 0.16, 0.68);
+          }
+        };
+      }
+
+      function createEmitterMode() {
+        var count = Math.max(0, Math.round(config.particleCount));
+        var positions = new Float32Array(count * 3);
+        var colors = new Float32Array(count * 3);
+        var velocities = new Float32Array(count * 3);
+        var life = new Float32Array(count);
+        var maxLife = new Float32Array(count);
+        var color = new THREE.Color();
+        var cursor = 0;
+        var spawnAccumulator = 0;
+
+        for (var i = 0; i < count; i += 1) {
+          positions[i * 3] = 0;
+          positions[i * 3 + 1] = 0;
+          positions[i * 3 + 2] = -9999;
+          color.setHSL(0.5, 0.8, 0.5);
+          colors[i * 3] = color.r;
+          colors[i * 3 + 1] = color.g;
+          colors[i * 3 + 2] = color.b;
+        }
+
+        var geometry = new THREE.BufferGeometry();
+        geometry.setAttribute("position", new THREE.BufferAttribute(positions, 3));
+        geometry.setAttribute("color", new THREE.BufferAttribute(colors, 3));
+
+        var material = new THREE.PointsMaterial({
+          size: config.particleSize * 1.65,
+          map: getSparkTexture(),
+          vertexColors: true,
+          transparent: true,
+          opacity: 0.96,
+          depthWrite: false,
+          blending: THREE.AdditiveBlending
+        });
+
+        var glowMaterial = new THREE.PointsMaterial({
+          size: config.particleSize * 9.2,
+          map: getGlowTexture(),
+          vertexColors: true,
+          transparent: true,
+          opacity: 0.42,
+          depthWrite: false,
+          blending: THREE.AdditiveBlending
+        });
+
+        var points = new THREE.Points(geometry, material);
+        points.name = "emitter-core";
+        var glow = new THREE.Points(geometry, glowMaterial);
+        glow.name = "emitter-glow";
+        var group = new THREE.Group();
+        group.name = "emitter";
+        group.add(glow);
+        group.add(points);
+
+        var flare = createGlowSprite(0x35e6d4, 92);
+        flare.name = "emitter-flare";
+        flare.visible = count > 0;
+        group.add(flare);
+
+        var ringGeometry = new THREE.RingGeometry(0.94, 1, 96);
+        var rings = [];
+        for (var r = 0; r < 4; r += 1) {
+          var ringMaterial = new THREE.MeshBasicMaterial({
+            color: r % 2 === 0 ? 0x35e6d4 : 0xff4f9a,
+            transparent: true,
+            opacity: 0,
+            side: THREE.DoubleSide,
+            depthWrite: false,
+            blending: THREE.AdditiveBlending
+          });
+          var ring = new THREE.Mesh(ringGeometry, ringMaterial);
+          ring.name = "emitter-shockwave";
+          ring.rotation.x = Math.PI * 0.5;
+          ring.visible = false;
+          group.add(ring);
+          rings.push({
+            mesh: ring,
+            age: 9,
+            life: 1.1
+          });
+        }
+        var ringCursor = 0;
+        var ringAccumulator = 0;
+
+        function spawn(time) {
+          if (count === 0) {
+            return;
+          }
+          var i = cursor;
+          cursor = (cursor + 1) % count;
+          var idx = i * 3;
+          var angle = Math.random() * Math.PI * 2;
+          var elevation = THREE.MathUtils.randFloatSpread(0.75);
+          var speed = (86 + state.levels.bass * 260 + Math.random() * 135) * config.sparkPower;
+          var spread = 0.36 + state.levels.treble * 1.05 + config.sparkPower * 0.14;
+          positions[idx] = Math.cos(time * 2.1) * 8;
+          positions[idx + 1] = Math.sin(time * 1.7) * 8;
+          positions[idx + 2] = 0;
+          velocities[idx] = Math.cos(angle) * Math.cos(elevation) * speed * spread;
+          velocities[idx + 1] = Math.sin(elevation) * speed * (0.85 + state.levels.mid);
+          velocities[idx + 2] = Math.sin(angle) * Math.cos(elevation) * speed * spread;
+          maxLife[i] = 0.9 + Math.random() * 1.45 + state.levels.overall * 0.95;
+          life[i] = maxLife[i];
+        }
+
+        function spawnRing() {
+          var ring = rings[ringCursor];
+          ringCursor = (ringCursor + 1) % rings.length;
+          ring.age = 0;
+          ring.life = 0.72 + state.levels.bass * 0.65;
+          ring.mesh.visible = true;
+          ring.mesh.rotation.z = Math.random() * Math.PI;
+        }
+
+        return {
+          object: group,
+          update: function (delta, time) {
+            if (count === 0) {
+              return;
+            }
+            spawnAccumulator += delta * (18 + state.levels.overall * 126) * config.sparkPower;
+            while (spawnAccumulator > 1) {
+              spawn(time);
+              spawnAccumulator -= 1;
+            }
+
+            ringAccumulator += delta * (0.65 + state.levels.bass * 4.1) * config.sparkPower;
+            while (ringAccumulator > 1) {
+              spawnRing();
+              ringAccumulator -= 1;
+            }
+
+            for (var i = 0; i < count; i += 1) {
+              var idx = i * 3;
+              if (life[i] <= 0) {
+                positions[idx + 2] = -9999;
+                continue;
+              }
+              life[i] -= delta;
+              velocities[idx] *= 0.987;
+              velocities[idx + 1] *= 0.984;
+              velocities[idx + 2] *= 0.987;
+              positions[idx] += velocities[idx] * delta;
+              positions[idx + 1] += velocities[idx + 1] * delta;
+              positions[idx + 2] += velocities[idx + 2] * delta;
+              var normalizedLife = clamp(life[i] / Math.max(0.001, maxLife[i]), 0, 1);
+              color.setHSL((0.53 + normalizedLife * 0.23 + state.levels.bass * 0.08) % 1, 0.86, 0.26 + normalizedLife * 0.48);
+              colors[idx] = color.r;
+              colors[idx + 1] = color.g;
+              colors[idx + 2] = color.b;
+            }
+
+            rings.forEach(function (ring, index) {
+              ring.age += delta;
+              var progress = ring.age / ring.life;
+              if (progress >= 1) {
+                ring.mesh.visible = false;
+                return;
+              }
+              var size = 34 + progress * (240 + state.levels.bass * 180) * config.sparkPower;
+              ring.mesh.scale.set(size, size, size);
+              ring.mesh.material.opacity = Math.pow(1 - progress, 2.2) * (0.24 + state.levels.bass * 0.52);
+              ring.mesh.rotation.y = Math.sin(time * 0.8 + index) * 0.28;
+            });
+
+            geometry.attributes.position.needsUpdate = true;
+            geometry.attributes.color.needsUpdate = true;
+            material.size = config.particleSize * (1.55 + state.levels.treble * 2.8);
+            glowMaterial.size = config.particleSize * (7.4 + state.levels.treble * 8.2 + config.sparkPower * 1.4);
+            glowMaterial.opacity = clamp(0.26 + state.levels.overall * 0.58, 0.2, 0.82);
+            flare.scale.setScalar(76 + state.levels.bass * 110 + state.levels.treble * 72);
+            flare.material.opacity = clamp(0.18 + state.levels.overall * 0.72, 0.14, 0.86);
+          }
+        };
+      }
+
+      function createMeshMode(id) {
+        var geometry;
+        if (id === "torus") {
+          geometry = new THREE.TorusGeometry(132, 27, 72, 180);
+        } else if (id === "torusKnot") {
+          geometry = new THREE.TorusKnotGeometry(108, 23, 220, 24);
+        } else if (id === "icosahedron") {
+          geometry = new THREE.IcosahedronGeometry(145, 4);
+        } else {
+          geometry = new THREE.OctahedronGeometry(150, 4);
+        }
+
+        geometry.computeVertexNormals();
+        var position = geometry.attributes.position;
+        var normal = geometry.attributes.normal;
+        var base = new Float32Array(position.array);
+        var normalBase = new Float32Array(normal.array);
+
+        var colorMap = {
+          torus: 0x35e6d4,
+          torusKnot: 0xff4f9a,
+          icosahedron: 0x9bff78,
+          octahedron: 0xffbe55
+        };
+
+        var material = new THREE.MeshStandardMaterial({
+          color: colorMap[id],
+          emissive: colorMap[id],
+          emissiveIntensity: 0.22,
+          metalness: 0.35,
+          roughness: 0.36,
+          transparent: true,
+          opacity: 0.68,
+          side: THREE.DoubleSide
+        });
+
+        var mesh = new THREE.Mesh(geometry, material);
+        mesh.name = id + "-mesh";
+
+        var glowMaterial = new THREE.MeshBasicMaterial({
+          color: colorMap[id],
+          transparent: true,
+          opacity: 0.12,
+          side: THREE.BackSide,
+          depthWrite: false,
+          blending: THREE.AdditiveBlending
+        });
+        var glowMesh = new THREE.Mesh(geometry, glowMaterial);
+        glowMesh.name = id + "-outer-glow";
+        glowMesh.scale.setScalar(1.09);
+
+        var wire = new THREE.LineSegments(
+          new THREE.WireframeGeometry(geometry),
+          new THREE.LineBasicMaterial({
+            color: colorMap[id],
+            transparent: true,
+            opacity: 0.34,
+            blending: THREE.AdditiveBlending
+          })
+        );
+        wire.name = id + "-wire";
+
+        var group = new THREE.Group();
+        group.name = id;
+        group.add(glowMesh);
+        group.add(mesh);
+        group.add(wire);
+
+        if (id === "torusKnot") {
+          group.rotation.x = 0.45;
+        }
+        if (id === "icosahedron") {
+          group.rotation.z = 0.22;
+        }
+        if (id === "octahedron") {
+          group.rotation.x = -0.32;
+        }
+
+        return {
+          object: group,
+          update: function (delta, time) {
+            var pos = position.array;
+            var count = position.count;
+            var profile = id === "torus" ? state.levels.bass : id === "torusKnot" ? state.levels.mid : state.levels.treble;
+            var amp = 8 + profile * 42 + state.levels.overall * 22;
+            for (var i = 0; i < count; i += 1) {
+              var idx = i * 3;
+              var freq = sampleFrequency((i % 900) / 900);
+              var ripple = Math.sin(time * (1.4 + profile * 1.2) + base[idx] * 0.025 + base[idx + 1] * 0.019 + freq * 3.2);
+              var displacement = ripple * amp * (0.35 + freq);
+              pos[idx] = base[idx] + normalBase[idx] * displacement;
+              pos[idx + 1] = base[idx + 1] + normalBase[idx + 1] * displacement;
+              pos[idx + 2] = base[idx + 2] + normalBase[idx + 2] * displacement;
+            }
+            position.needsUpdate = true;
+            geometry.computeVertexNormals();
+            mesh.scale.setScalar(0.92 + state.levels.bass * 0.2 + state.levels.overall * 0.2);
+            material.emissiveIntensity = 0.16 + state.levels.treble * 0.52;
+            glowMesh.scale.setScalar(mesh.scale.x * (1.08 + state.levels.overall * 0.18));
+            glowMaterial.opacity = clamp(0.08 + state.levels.overall * 0.24, 0.06, 0.42);
+            wire.material.opacity = clamp(0.22 + state.levels.treble * 0.42, 0.18, 0.72);
+            group.rotation.x += delta * (0.08 + state.levels.mid * 0.22);
+            group.rotation.y += delta * (0.11 + state.levels.bass * 0.28);
+          }
+        };
+      }
+
+      function createTriangleMode() {
+        var geometry = new THREE.BufferGeometry();
+        var vertices = new Float32Array([
+          0, 122, 0,
+          -142, -106, 0,
+          142, -106, 0
+        ]);
+        geometry.setAttribute("position", new THREE.BufferAttribute(vertices, 3));
+        geometry.setIndex([0, 1, 2]);
+        geometry.computeVertexNormals();
+
+        var material = new THREE.MeshBasicMaterial({
+          color: 0x35e6d4,
+          transparent: true,
+          opacity: 0.42,
+          side: THREE.DoubleSide,
+          depthWrite: false,
+          blending: THREE.AdditiveBlending
+        });
+        var triangle = new THREE.Mesh(geometry, material);
+        triangle.name = "triangle-plane";
+
+        var glowMaterial = new THREE.MeshBasicMaterial({
+          color: 0xff4f9a,
+          transparent: true,
+          opacity: 0.18,
+          side: THREE.DoubleSide,
+          depthWrite: false,
+          blending: THREE.AdditiveBlending
+        });
+        var glowTriangle = new THREE.Mesh(geometry, glowMaterial);
+        glowTriangle.name = "triangle-plane-glow";
+        glowTriangle.scale.setScalar(1.18);
+
+        var outline = new THREE.LineLoop(
+          new THREE.BufferGeometry().setAttribute(
+            "position",
+            new THREE.BufferAttribute(new Float32Array([
+              0, 122, 2,
+              -142, -106, 2,
+              142, -106, 2
+            ]), 3)
+          ),
+          new THREE.LineBasicMaterial({
+            color: 0xf8fbff,
+            transparent: true,
+            opacity: 0.88,
+            depthWrite: false,
+            blending: THREE.AdditiveBlending
+          })
+        );
+        outline.name = "triangle-outline";
+
+        var centerFlare = createGlowSprite(0x35e6d4, 150);
+        centerFlare.name = "triangle-center-flare";
+        centerFlare.position.z = -8;
+
+        var group = new THREE.Group();
+        group.name = "triangle";
+        group.position.set(0, 0, 56);
+        group.add(centerFlare);
+        group.add(glowTriangle);
+        group.add(triangle);
+        group.add(outline);
+
+        var motion = {
+          x: 0,
+          startX: 0,
+          targetX: 0,
+          startedAt: 0,
+          duration: 1,
+          nextMoveAt: 0.2,
+          lastActiveAt: 0,
+          seed: Math.random() * 100
+        };
+
+        function beginMove(targetX, time, duration) {
+          motion.startX = motion.x;
+          motion.targetX = targetX;
+          motion.startedAt = time;
+          motion.duration = Math.max(0.28, duration);
+        }
+
+        function chooseAudioTarget(time, energy) {
+          var side = Math.random() < 0.5 ? -1 : 1;
+          var reach = 95 + Math.random() * 235;
+          reach *= 0.72 + energy * 1.08;
+          beginMove(side * clamp(reach, 70, 340), time, 0.52 + (1 - clamp(energy, 0, 1)) * 0.62);
+          motion.nextMoveAt = time + 0.32 + Math.random() * 0.58;
+        }
+
+        return {
+          object: group,
+          attachToScene: true,
+          update: function (delta, time) {
+            var energy = clamp(state.levels.overall * 0.75 + state.levels.bass * 0.55, 0, 1);
+            var isActive = energy > 0.14;
+            if (isActive) {
+              motion.lastActiveAt = time;
+            }
+            if (isActive && time >= motion.nextMoveAt) {
+              chooseAudioTarget(time, energy);
+            } else if (!isActive && Math.abs(motion.targetX) > 0.1 && time - motion.lastActiveAt > 0.55) {
+              beginMove(0, time, 1.15);
+              motion.nextMoveAt = time + 0.9;
+            }
+
+            var progress = clamp((time - motion.startedAt) / motion.duration, 0, 1);
+            var eased = easeOutCubic(progress);
+            motion.x = lerp(motion.startX, motion.targetX, eased);
+
+            var hover = Math.sin(time * 1.6 + motion.seed) * 7 * (0.25 + energy);
+            group.position.x = motion.x;
+            group.position.y = hover;
+            group.scale.setScalar(0.72 + energy * 0.32 + state.levels.treble * 0.08);
+            group.rotation.z = THREE.MathUtils.degToRad(motion.x * 0.055) + Math.sin(time * 2.3) * energy * 0.08;
+
+            material.opacity = clamp(0.28 + energy * 0.38 + state.levels.treble * 0.16, 0.24, 0.86);
+            glowMaterial.opacity = clamp(0.12 + energy * 0.38, 0.1, 0.58);
+            glowTriangle.scale.setScalar(1.16 + energy * 0.28);
+            outline.material.opacity = clamp(0.56 + state.levels.treble * 0.42, 0.48, 1);
+            centerFlare.scale.setScalar(118 + energy * 150 + state.levels.treble * 54);
+            centerFlare.material.opacity = clamp(0.16 + energy * 0.5, 0.1, 0.68);
+          }
+        };
+      }
+
+      function createCymaticCrownMode() {
+        var count = Math.max(0, Math.round(config.particleCount));
+        var positions = new Float32Array(count * 3);
+        var colors = new Float32Array(count * 3);
+        var seeds = new Float32Array(count * 6);
+        var color = new THREE.Color();
+        var tiers = [
+          { radius: 80, y: -34, ridge: 52, symmetry: 8 },
+          { radius: 130, y: -18, ridge: 76, symmetry: 10 },
+          { radius: 184, y: -44, ridge: 98, symmetry: 14 },
+          { radius: 240, y: -70, ridge: 120, symmetry: 18 },
+          { radius: 304, y: -104, ridge: 136, symmetry: 22 }
+        ];
+
+        for (var i = 0; i < count; i += 1) {
+          var tierIndex = Math.floor(Math.random() * tiers.length);
+          var tier = tiers[tierIndex];
+          var angle = Math.random() * Math.PI * 2;
+          var ridge = Math.pow((Math.cos(angle * tier.symmetry) + 1) * 0.5, 6);
+          var radius = tier.radius + THREE.MathUtils.randFloatSpread(18 + tierIndex * 7);
+          var drip = Math.random() < 0.2 ? Math.random() * (46 + tierIndex * 14) : 0;
+          var baseY = tier.y + ridge * tier.ridge + THREE.MathUtils.randFloatSpread(14) - drip;
+          var phase = Math.random() * Math.PI * 2;
+          var idx = i * 3;
+          var seedIdx = i * 6;
+          seeds[seedIdx] = angle;
+          seeds[seedIdx + 1] = radius;
+          seeds[seedIdx + 2] = baseY;
+          seeds[seedIdx + 3] = ridge;
+          seeds[seedIdx + 4] = drip;
+          seeds[seedIdx + 5] = phase;
+          positions[idx] = Math.cos(angle) * radius;
+          positions[idx + 1] = baseY;
+          positions[idx + 2] = Math.sin(angle) * radius * 0.72;
+          color.setHSL(0.57, 0.44, 0.58 + ridge * 0.3);
+          colors[idx] = color.r;
+          colors[idx + 1] = color.g;
+          colors[idx + 2] = color.b;
+        }
+
+        var crownGeometry = new THREE.BufferGeometry();
+        crownGeometry.setAttribute("position", new THREE.BufferAttribute(positions, 3));
+        crownGeometry.setAttribute("color", new THREE.BufferAttribute(colors, 3));
+
+        var crownMaterial = new THREE.PointsMaterial({
+          size: config.particleSize * 0.72,
+          map: getSparkTexture(),
+          vertexColors: true,
+          transparent: true,
+          opacity: 0.96,
+          depthWrite: false,
+          blending: THREE.AdditiveBlending
+        });
+
+        var crownGlowMaterial = new THREE.PointsMaterial({
+          size: config.particleSize * 5.6,
+          map: getGlowTexture(),
+          vertexColors: true,
+          transparent: true,
+          opacity: 0.32,
+          depthWrite: false,
+          blending: THREE.AdditiveBlending
+        });
+
+        var crownPoints = new THREE.Points(crownGeometry, crownMaterial);
+        crownPoints.name = "crown-points";
+        var crownGlow = new THREE.Points(crownGeometry, crownGlowMaterial);
+        crownGlow.name = "crown-points-glow";
+
+        var group = new THREE.Group();
+        group.name = "crown";
+        group.position.y = -18;
+        group.add(crownGlow);
+        group.add(crownPoints);
+
+        var beamMaterial = new THREE.MeshBasicMaterial({
+          color: 0xd9f2ff,
+          transparent: true,
+          opacity: 0.08,
+          side: THREE.DoubleSide,
+          depthWrite: false,
+          blending: THREE.AdditiveBlending
+        });
+        var beam = new THREE.Mesh(new THREE.CylinderGeometry(34, 92, 620, 48, 1, true), beamMaterial);
+        beam.name = "crown-light-beam";
+        beam.position.y = 248;
+        group.add(beam);
+
+        var floorRings = [];
+        [120, 184, 252, 326, 398].forEach(function (radius, index) {
+          var ringGeometry = new THREE.BufferGeometry();
+          var ringPositions = new Float32Array(240 * 3);
+          for (var p = 0; p < 240; p += 1) {
+            var angle = p / 240 * Math.PI * 2;
+            ringPositions[p * 3] = Math.cos(angle) * radius;
+            ringPositions[p * 3 + 1] = -135 - index * 4;
+            ringPositions[p * 3 + 2] = Math.sin(angle) * radius * 0.72;
+          }
+          ringGeometry.setAttribute("position", new THREE.BufferAttribute(ringPositions, 3));
+          var ring = new THREE.LineLoop(
+            ringGeometry,
+            new THREE.LineBasicMaterial({
+              color: index % 2 === 0 ? 0xdff7ff : 0x50b8ff,
+              transparent: true,
+              opacity: 0.14,
+              depthWrite: false,
+              blending: THREE.AdditiveBlending
+            })
+          );
+          ring.name = "crown-floor-ring";
+          floorRings.push(ring);
+          group.add(ring);
+        });
+
+        var orbUpdaters = [];
+        function addReactiveOrb(options) {
+          var orbGroup = new THREE.Group();
+          orbGroup.name = options.name;
+          orbGroup.position.copy(options.position);
+
+          var meshMaterial = new THREE.MeshBasicMaterial({
+            color: options.color,
+            transparent: true,
+            opacity: 0.2,
+            depthWrite: false,
+            blending: THREE.AdditiveBlending
+          });
+          var mesh = new THREE.Mesh(new THREE.SphereGeometry(options.radius, 32, 20), meshMaterial);
+          mesh.name = options.name + "-shell";
+          orbGroup.add(mesh);
+
+          var glow = createGlowSprite(options.color, options.radius * 3.2);
+          glow.name = options.name + "-glow";
+          orbGroup.add(glow);
+
+          var particleCount = options.particles;
+          var orbPositions = new Float32Array(particleCount * 3);
+          var orbColors = new Float32Array(particleCount * 3);
+          var orbSeeds = new Float32Array(particleCount * 5);
+          for (var i = 0; i < particleCount; i += 1) {
+            var theta = Math.random() * Math.PI * 2;
+            var phi = Math.acos(THREE.MathUtils.randFloatSpread(2));
+            var dx = Math.sin(phi) * Math.cos(theta);
+            var dy = Math.cos(phi);
+            var dz = Math.sin(phi) * Math.sin(theta);
+            var depth = 0.28 + Math.random() * 0.72;
+            orbSeeds[i * 5] = dx;
+            orbSeeds[i * 5 + 1] = dy;
+            orbSeeds[i * 5 + 2] = dz;
+            orbSeeds[i * 5 + 3] = depth;
+            orbSeeds[i * 5 + 4] = Math.random() * Math.PI * 2;
+            orbPositions[i * 3] = dx * options.radius * depth;
+            orbPositions[i * 3 + 1] = dy * options.radius * depth;
+            orbPositions[i * 3 + 2] = dz * options.radius * depth;
+            color.set(options.color);
+            orbColors[i * 3] = color.r;
+            orbColors[i * 3 + 1] = color.g;
+            orbColors[i * 3 + 2] = color.b;
+          }
+          var orbGeometry = new THREE.BufferGeometry();
+          orbGeometry.setAttribute("position", new THREE.BufferAttribute(orbPositions, 3));
+          orbGeometry.setAttribute("color", new THREE.BufferAttribute(orbColors, 3));
+          var orbMaterial = new THREE.PointsMaterial({
+            size: config.particleSize * options.pointScale,
+            map: getSparkTexture(),
+            vertexColors: true,
+            transparent: true,
+            opacity: 0.98,
+            depthWrite: false,
+            blending: THREE.AdditiveBlending
+          });
+          var orbPoints = new THREE.Points(orbGeometry, orbMaterial);
+          orbPoints.name = options.name + "-inner-points";
+          orbGroup.add(orbPoints);
+
+          var waveBands = [];
+          var waveBandCount = options.waveBands || 3;
+          var waveSegments = options.waveSegments || 64;
+          function setWaveRingPoint(target, idx, theta, ringRadius, ringY, waveLift, band) {
+            var localX = Math.cos(theta) * ringRadius;
+            var localY = ringY + waveLift;
+            var localZ = Math.sin(theta) * ringRadius;
+
+            var y1 = localY * band.cosX - localZ * band.sinX;
+            var z1 = localY * band.sinX + localZ * band.cosX;
+            var x1 = localX;
+
+            var x2 = x1 * band.cosZ - y1 * band.sinZ;
+            var y2 = x1 * band.sinZ + y1 * band.cosZ;
+            var z2 = z1;
+
+            target[idx] = x2 * band.cosY + z2 * band.sinY;
+            target[idx + 1] = y2;
+            target[idx + 2] = -x2 * band.sinY + z2 * band.cosY;
+          }
+
+          for (var bandIndex = 0; bandIndex < waveBandCount; bandIndex += 1) {
+            var bandProgress = waveBandCount === 1 ? 0.5 : bandIndex / (waveBandCount - 1);
+            var latitude = (bandProgress - 0.5) * 1.2;
+            var bandY = latitude * options.radius * 0.92;
+            var ringRadius = options.radius * (1.36 - Math.abs(latitude) * 0.26);
+            var tiltX = (bandProgress - 0.5) * (options.waveTiltX || 0.86);
+            var tiltZ = Math.sin(options.phase + bandIndex * 1.31) * (options.waveTiltZ || 0.42);
+            var spinY = options.phase + bandIndex * (Math.PI / Math.max(1, waveBandCount));
+            var band = {
+              y: bandY,
+              radius: ringRadius,
+              sinX: Math.sin(tiltX),
+              cosX: Math.cos(tiltX),
+              sinY: Math.sin(spinY),
+              cosY: Math.cos(spinY),
+              sinZ: Math.sin(tiltZ),
+              cosZ: Math.cos(tiltZ)
+            };
+            var wavePositions = new Float32Array(waveSegments * 3);
+            var waveColors = new Float32Array(waveSegments * 3);
+            for (var w = 0; w < waveSegments; w += 1) {
+              var theta = w / waveSegments * Math.PI * 2;
+              setWaveRingPoint(wavePositions, w * 3, theta, ringRadius, bandY, 0, band);
+              color.set(options.color);
+              waveColors[w * 3] = color.r;
+              waveColors[w * 3 + 1] = color.g;
+              waveColors[w * 3 + 2] = color.b;
+            }
+            var waveGeometry = new THREE.BufferGeometry();
+            waveGeometry.setAttribute("position", new THREE.BufferAttribute(wavePositions, 3));
+            waveGeometry.setAttribute("color", new THREE.BufferAttribute(waveColors, 3));
+            var waveMaterial = new THREE.PointsMaterial({
+              size: config.particleSize * (options.wavePointScale || 0.62),
+              map: getSparkTexture(),
+              vertexColors: true,
+              transparent: true,
+              opacity: 0.52,
+              depthWrite: false,
+              blending: THREE.AdditiveBlending
+            });
+            var wavePoints = new THREE.Points(waveGeometry, waveMaterial);
+            wavePoints.name = options.name + "-wave-band";
+            orbGroup.add(wavePoints);
+            waveBands.push({
+              geometry: waveGeometry,
+              material: waveMaterial,
+              y: bandY,
+              radius: ringRadius,
+              sinX: band.sinX,
+              cosX: band.cosX,
+              sinY: band.sinY,
+              cosY: band.cosY,
+              sinZ: band.sinZ,
+              cosZ: band.cosZ,
+              phase: options.phase + bandIndex * 1.17,
+              count: waveSegments
+            });
+          }
+
+          var torusBands = [];
+          var torusCount = options.torusCount || 1;
+          for (var torusIndex = 0; torusIndex < torusCount; torusIndex += 1) {
+            var torusRadius = options.radius * (options.torusRadiusScale || 1.48) * (1 + torusIndex * 0.18);
+            var torusTube = Math.max(0.9, options.radius * (options.torusTubeScale || 0.026));
+            var torusGeometry = new THREE.TorusGeometry(
+              torusRadius,
+              torusTube,
+              options.torusRadialSegments || 10,
+              options.torusSegments || 160
+            );
+            var torusPosition = torusGeometry.attributes.position;
+            var torusBase = new Float32Array(torusPosition.array);
+            var torusAngles = new Float32Array(torusPosition.count);
+            for (var tv = 0; tv < torusPosition.count; tv += 1) {
+              torusAngles[tv] = Math.atan2(torusBase[tv * 3 + 1], torusBase[tv * 3]);
+            }
+            var torusMaterial = new THREE.MeshBasicMaterial({
+              color: options.color,
+              transparent: true,
+              opacity: 0.24,
+              side: THREE.DoubleSide,
+              depthWrite: false,
+              blending: THREE.AdditiveBlending
+            });
+            var torus = new THREE.Mesh(torusGeometry, torusMaterial);
+            torus.name = options.name + "-wave-torus";
+            torus.rotation.x = (torusIndex - (torusCount - 1) * 0.5) * (options.torusTiltX || 0.46);
+            torus.rotation.y = options.phase * 0.28 + torusIndex * (options.torusTiltY || 0.38);
+            torus.rotation.z = torusIndex * 0.72;
+            orbGroup.add(torus);
+            torusBands.push({
+              mesh: torus,
+              geometry: torusGeometry,
+              material: torusMaterial,
+              base: torusBase,
+              angles: torusAngles,
+              phase: options.phase + torusIndex * 1.43,
+              count: torusPosition.count
+            });
+          }
+
+          group.add(orbGroup);
+
+          orbUpdaters.push(function (value, time) {
+            var hasAudioInput = state.audioInputKind === "mic" || state.audioInputKind === "file";
+            var waveValue = hasAudioInput ? clamp((value - (options.waveFloor || 0.035)) * 1.22, 0, 1) : 0;
+            var arr = orbGeometry.attributes.position.array;
+            for (var i = 0; i < particleCount; i += 1) {
+              var seedIdx = i * 5;
+              var idx = i * 3;
+              var depth = orbSeeds[seedIdx + 3];
+              var pulse = Math.sin(time * options.speed + orbSeeds[seedIdx + 4]) * 0.08 * value;
+              var radius = options.radius * (0.22 + depth * 0.78 + value * (0.38 + depth * 0.42) + pulse);
+              arr[idx] = orbSeeds[seedIdx] * radius;
+              arr[idx + 1] = orbSeeds[seedIdx + 1] * radius;
+              arr[idx + 2] = orbSeeds[seedIdx + 2] * radius;
+            }
+            orbGeometry.attributes.position.needsUpdate = true;
+            mesh.scale.setScalar(1 + value * options.meshPulse);
+            meshMaterial.opacity = clamp(0.14 + value * 0.34, 0.12, 0.58);
+            glow.scale.setScalar(options.radius * (2.4 + value * 2.2));
+            glow.material.opacity = clamp(0.16 + value * 0.56, 0.12, 0.78);
+            orbMaterial.size = config.particleSize * (options.pointScale + value * options.pointPulse);
+            orbGroup.position.y = options.position.y + Math.sin(time * 1.2 + options.phase) * options.float * (0.25 + value);
+
+            waveBands.forEach(function (band, bandIndex) {
+              var waveArr = band.geometry.attributes.position.array;
+              var cycles = options.waveCycles || 2.2;
+              var speed = options.waveSpeed || options.speed * 1.8;
+              var amplitude = options.radius * (options.waveAmp || 0.24) * waveValue;
+              for (var w = 0; w < band.count; w += 1) {
+                var u = w / band.count;
+                var theta = u * Math.PI * 2;
+                var idx = w * 3;
+                var crest = Math.sin(u * Math.PI * 2 * cycles + time * speed + band.phase);
+                var fine = Math.sin(u * Math.PI * 2 * (cycles * 2.2) - time * speed * 0.72 + band.phase);
+                var radialPulse = (crest * 0.76 + fine * 0.24) * amplitude;
+                var liftPulse = Math.cos(u * Math.PI * 2 * cycles + time * speed + band.phase) * amplitude * 0.34;
+                setWaveRingPoint(waveArr, idx, theta, band.radius + radialPulse, band.y, liftPulse, band);
+              }
+              band.geometry.attributes.position.needsUpdate = true;
+              band.material.size = config.particleSize * ((options.wavePointScale || 0.62) + waveValue * (options.wavePointPulse || 1.25));
+              band.material.opacity = clamp(0.28 + waveValue * 0.62 + value * 0.12, 0.22, 0.92);
+            });
+
+            torusBands.forEach(function (torusBand, torusIndex) {
+              var torusArr = torusBand.geometry.attributes.position.array;
+              var torusCycles = options.torusCycles || options.waveCycles || 4;
+              var torusSpeed = options.torusSpeed || options.waveSpeed || options.speed * 2.2;
+              var torusAmp = options.radius * (options.torusAmp || 0.16) * waveValue;
+              for (var tv = 0; tv < torusBand.count; tv += 1) {
+                var idx = tv * 3;
+                var baseX = torusBand.base[idx];
+                var baseY = torusBand.base[idx + 1];
+                var baseZ = torusBand.base[idx + 2];
+                var theta = torusBand.angles[tv];
+                var distance = Math.max(0.001, Math.sqrt(baseX * baseX + baseY * baseY));
+                var outX = baseX / distance;
+                var outY = baseY / distance;
+                var crest = Math.sin(theta * torusCycles + time * torusSpeed + torusBand.phase);
+                var overtone = Math.sin(theta * torusCycles * 2.15 - time * torusSpeed * 0.62 + torusBand.phase);
+                var displacement = (crest * 0.78 + overtone * 0.22) * torusAmp;
+                torusArr[idx] = baseX + outX * displacement;
+                torusArr[idx + 1] = baseY + outY * displacement;
+                torusArr[idx + 2] = baseZ + Math.cos(theta * torusCycles + time * torusSpeed + torusBand.phase) * torusAmp * 0.28;
+              }
+              torusBand.geometry.attributes.position.needsUpdate = true;
+              torusBand.material.opacity = clamp(0.16 + waveValue * 0.42 + value * 0.16, 0.12, 0.78);
+              torusBand.mesh.scale.setScalar(1 + value * (options.torusPulse || 0.2));
+              torusBand.mesh.rotation.z = torusIndex * 0.72 + time * value * (options.torusSpin || 0.36);
+            });
+          });
+
+          return orbGroup;
+        }
+
+        var lowOrb = addReactiveOrb({
+          name: "crown-low-orb",
+          radius: 70,
+          color: 0xf4fbff,
+          position: new THREE.Vector3(0, 32, 0),
+          particles: 520,
+          pointScale: 1.05,
+          pointPulse: 1.8,
+          meshPulse: 0.34,
+          speed: 1.6,
+          float: 5,
+          phase: 0,
+          waveBands: 5,
+          waveSegments: 96,
+          waveCycles: 2.0,
+          waveAmp: 0.19,
+          waveSpeed: 2.2,
+          wavePointScale: 0.7,
+          wavePointPulse: 1.25,
+          waveTiltX: 1.05,
+          waveTiltZ: 0.5,
+          torusCount: 2,
+          torusSegments: 192,
+          torusRadiusScale: 1.58,
+          torusTubeScale: 0.018,
+          torusCycles: 4.2,
+          torusAmp: 0.16,
+          torusSpeed: 2.4,
+          torusPulse: 0.18,
+          torusSpin: 0.18,
+          waveFloor: 0.04
+        });
+
+        var midOrbs = [];
+        for (var m = 0; m < 6; m += 1) {
+          var angle = m / 6 * Math.PI * 2;
+          midOrbs.push(addReactiveOrb({
+            name: "crown-mid-orb",
+            radius: 28,
+            color: 0x61d9ff,
+            position: new THREE.Vector3(Math.cos(angle) * 188, -6, Math.sin(angle) * 135),
+            particles: 150,
+            pointScale: 0.74,
+            pointPulse: 1.5,
+            meshPulse: 0.52,
+            speed: 2.4,
+            float: 18,
+            phase: angle,
+            waveBands: 3,
+            waveSegments: 58,
+            waveCycles: 2.7,
+            waveAmp: 0.34,
+            waveSpeed: 4.2,
+            wavePointScale: 0.54,
+            wavePointPulse: 1.45,
+            waveTiltX: 1.18,
+            waveTiltZ: 0.72,
+            torusCount: 1,
+            torusSegments: 128,
+            torusRadiusScale: 1.62,
+            torusTubeScale: 0.026,
+            torusCycles: 6.4,
+            torusAmp: 0.25,
+            torusSpeed: 4.4,
+            torusPulse: 0.25,
+            torusSpin: 0.42,
+            waveFloor: 0.035
+          }));
+        }
+
+        var highOrbs = [];
+        [0, Math.PI * 0.5, Math.PI, Math.PI * 1.5].forEach(function (angle, index) {
+          highOrbs.push(addReactiveOrb({
+            name: "crown-high-orb",
+            radius: index === 0 ? 30 : 20,
+            color: 0xbfeeff,
+            position: new THREE.Vector3(Math.cos(angle) * (index === 0 ? 0 : 126), 176 + (index === 0 ? 36 : 0), Math.sin(angle) * (index === 0 ? 0 : 86)),
+            particles: index === 0 ? 190 : 110,
+            pointScale: 0.64,
+            pointPulse: 2.2,
+            meshPulse: 0.66,
+            speed: 3.8,
+            float: 22,
+            phase: angle + 1.7,
+            waveBands: index === 0 ? 4 : 3,
+            waveSegments: index === 0 ? 70 : 48,
+            waveCycles: 3.4,
+            waveAmp: 0.48,
+            waveSpeed: 6.1,
+            wavePointScale: 0.48,
+            wavePointPulse: 1.8,
+            waveTiltX: 0.92,
+            waveTiltZ: 0.86,
+            torusCount: index === 0 ? 2 : 1,
+            torusSegments: index === 0 ? 144 : 112,
+            torusRadiusScale: 1.56,
+            torusTubeScale: 0.028,
+            torusCycles: 9.2,
+            torusAmp: 0.34,
+            torusSpeed: 6.6,
+            torusPulse: 0.32,
+            torusSpin: 0.72,
+            waveFloor: 0.03
+          }));
+        });
+
+        var snowCount = 520;
+        var snowPositions = new Float32Array(snowCount * 3);
+        var snowColors = new Float32Array(snowCount * 3);
+        var snowSeeds = new Float32Array(snowCount * 4);
+        for (var s = 0; s < snowCount; s += 1) {
+          snowSeeds[s * 4] = THREE.MathUtils.randFloatSpread(760);
+          snowSeeds[s * 4 + 1] = -170 + Math.random() * 560;
+          snowSeeds[s * 4 + 2] = THREE.MathUtils.randFloatSpread(520);
+          snowSeeds[s * 4 + 3] = Math.random() * Math.PI * 2;
+          snowPositions[s * 3] = snowSeeds[s * 4];
+          snowPositions[s * 3 + 1] = snowSeeds[s * 4 + 1];
+          snowPositions[s * 3 + 2] = snowSeeds[s * 4 + 2];
+          color.setHSL(0.58, 0.26, 0.68 + Math.random() * 0.25);
+          snowColors[s * 3] = color.r;
+          snowColors[s * 3 + 1] = color.g;
+          snowColors[s * 3 + 2] = color.b;
+        }
+        var snowGeometry = new THREE.BufferGeometry();
+        snowGeometry.setAttribute("position", new THREE.BufferAttribute(snowPositions, 3));
+        snowGeometry.setAttribute("color", new THREE.BufferAttribute(snowColors, 3));
+        var snowMaterial = new THREE.PointsMaterial({
+          size: config.particleSize * 1.4,
+          map: getGlowTexture(),
+          vertexColors: true,
+          transparent: true,
+          opacity: 0.42,
+          depthWrite: false,
+          blending: THREE.AdditiveBlending
+        });
+        var snow = new THREE.Points(snowGeometry, snowMaterial);
+        snow.name = "crown-floating-ice";
+        group.add(snow);
+
+        return {
+          object: group,
+          update: function (delta, time) {
+            var low = state.levels.bass;
+            var mid = state.levels.mid;
+            var high = state.levels.treble;
+            var overall = state.levels.overall;
+            var pos = crownGeometry.attributes.position.array;
+            var col = crownGeometry.attributes.color.array;
+            for (var i = 0; i < count; i += 1) {
+              var idx = i * 3;
+              var seedIdx = i * 6;
+              var angle = seeds[seedIdx];
+              var radius = seeds[seedIdx + 1];
+              var baseY = seeds[seedIdx + 2];
+              var ridge = seeds[seedIdx + 3];
+              var drip = seeds[seedIdx + 4];
+              var phase = seeds[seedIdx + 5];
+              var ringWave = Math.sin(angle * 12 + time * 1.5 + phase) * mid * 24;
+              var peakLift = ridge * (high * 95 + mid * 28);
+              var lowPush = radius * low * 0.08;
+              var dynamicRadius = radius + lowPush + ringWave * 0.35 + ridge * high * 36;
+              pos[idx] = Math.cos(angle) * dynamicRadius;
+              pos[idx + 1] = baseY + ringWave + peakLift - drip * high * 0.45;
+              pos[idx + 2] = Math.sin(angle) * dynamicRadius * 0.72;
+              color.setHSL(0.56 + high * 0.04, 0.28 + high * 0.32, clamp(0.5 + ridge * 0.36 + overall * 0.32, 0, 1));
+              col[idx] = color.r;
+              col[idx + 1] = color.g;
+              col[idx + 2] = color.b;
+            }
+            crownGeometry.attributes.position.needsUpdate = true;
+            crownGeometry.attributes.color.needsUpdate = true;
+            crownMaterial.size = config.particleSize * (0.68 + high * 1.2);
+            crownGlowMaterial.size = config.particleSize * (4.8 + high * 5.8 + overall * 3.2);
+            crownGlowMaterial.opacity = clamp(0.22 + overall * 0.5, 0.16, 0.72);
+
+            orbUpdaters[0](low, time);
+            for (var m = 1; m <= midOrbs.length; m += 1) {
+              orbUpdaters[m](mid, time);
+            }
+            for (var h = 1 + midOrbs.length; h < orbUpdaters.length; h += 1) {
+              orbUpdaters[h](high, time);
+            }
+
+            floorRings.forEach(function (ring, index) {
+              ring.scale.setScalar(1 + low * 0.08 + mid * 0.04 + index * high * 0.01);
+              ring.material.opacity = clamp(0.1 + low * 0.15 + high * 0.08, 0.08, 0.36);
+              ring.rotation.y += delta * (0.04 + index * 0.004);
+            });
+
+            var snowArr = snowGeometry.attributes.position.array;
+            for (var s = 0; s < snowCount; s += 1) {
+              var idx = s * 3;
+              var seedIdx = s * 4;
+              var fall = (time * (18 + high * 58) + snowSeeds[seedIdx + 3] * 80) % 560;
+              snowArr[idx] = snowSeeds[seedIdx] + Math.sin(time * 0.7 + snowSeeds[seedIdx + 3]) * (12 + high * 22);
+              snowArr[idx + 1] = 350 - fall;
+              snowArr[idx + 2] = snowSeeds[seedIdx + 2] + Math.cos(time * 0.5 + snowSeeds[seedIdx + 3]) * 12;
+            }
+            snowGeometry.attributes.position.needsUpdate = true;
+            snowMaterial.size = config.particleSize * (1.1 + high * 2.2);
+            snowMaterial.opacity = clamp(0.24 + high * 0.44, 0.18, 0.72);
+
+            beam.scale.x = 1 + low * 0.22 + high * 0.18;
+            beam.scale.z = 1 + low * 0.22 + high * 0.18;
+            beamMaterial.opacity = clamp(0.06 + overall * 0.18 + high * 0.12, 0.04, 0.36);
+            lowOrb.rotation.y += delta * (0.08 + low * 0.26);
+            group.rotation.y += delta * (0.035 + mid * 0.08);
+            group.rotation.x = Math.sin(time * 0.36) * 0.05;
+          }
+        };
+      }
+
+      function createVideoMode() {
+        var targetCount = Math.max(0, Math.round(config.particleCount));
+        var aspect = config.videoWidth / config.videoHeight;
+        var columns = targetCount === 0 ? 0 : Math.max(2, Math.round(Math.sqrt(targetCount * aspect)));
+        var rows = targetCount === 0 ? 0 : Math.max(2, Math.floor(targetCount / columns));
+        var count = columns * rows;
+        var positions = new Float32Array(count * 3);
+        var colors = new Float32Array(count * 3);
+        var color = new THREE.Color();
+
+        for (var row = 0; row < rows; row += 1) {
+          for (var col = 0; col < columns; col += 1) {
+            var i = row * columns + col;
+            var idx = i * 3;
+            var x = (col / Math.max(1, columns - 1) - 0.5) * 430;
+            var y = (0.5 - row / Math.max(1, rows - 1)) * 322;
+            positions[idx] = x;
+            positions[idx + 1] = y;
+            positions[idx + 2] = 0;
+            color.setHSL(0.52, 0.72, 0.44);
+            colors[idx] = color.r;
+            colors[idx + 1] = color.g;
+            colors[idx + 2] = color.b;
+          }
+        }
+
+        var geometry = new THREE.BufferGeometry();
+        geometry.setAttribute("position", new THREE.BufferAttribute(positions, 3));
+        geometry.setAttribute("color", new THREE.BufferAttribute(colors, 3));
+
+        var material = new THREE.PointsMaterial({
+          size: config.particleSize * 1.05,
+          map: getSparkTexture(),
+          vertexColors: true,
+          transparent: true,
+          opacity: 0.9,
+          depthWrite: false,
+          blending: THREE.AdditiveBlending
+        });
+
+        var glowMaterial = new THREE.PointsMaterial({
+          size: config.particleSize * 5.5,
+          map: getGlowTexture(),
+          vertexColors: true,
+          transparent: true,
+          opacity: 0.31,
+          depthWrite: false,
+          blending: THREE.AdditiveBlending
+        });
+
+        var points = new THREE.Points(geometry, material);
+        points.name = "video-core";
+        var glow = new THREE.Points(geometry, glowMaterial);
+        glow.name = "video-glow";
+        var group = new THREE.Group();
+        group.name = "video";
+        group.add(glow);
+        group.add(points);
+
+        return {
+          object: group,
+          update: function (delta, time) {
+            var imageData = null;
+            if (state.videoReady && els.videoElement.readyState >= 2) {
+              try {
+                state.videoContext.drawImage(els.videoElement, 0, 0, config.videoWidth, config.videoHeight);
+                imageData = state.videoContext.getImageData(0, 0, config.videoWidth, config.videoHeight).data;
+              } catch (error) {
+                imageData = null;
+              }
+            }
+
+            var pos = geometry.attributes.position.array;
+            var colArr = geometry.attributes.color.array;
+            for (var row = 0; row < rows; row += 1) {
+              for (var col = 0; col < columns; col += 1) {
+                var i = row * columns + col;
+                var idx = i * 3;
+                var brightness;
+                if (imageData) {
+                  var sx = Math.floor(col / Math.max(1, columns - 1) * (config.videoWidth - 1));
+                  var sy = Math.floor(row / Math.max(1, rows - 1) * (config.videoHeight - 1));
+                  var p = (sy * config.videoWidth + sx) * 4;
+                  brightness = (0.299 * imageData[p] + 0.587 * imageData[p + 1] + 0.114 * imageData[p + 2]) / 255;
+                } else {
+                  brightness = 0.5 + 0.5 * Math.sin(time * 1.8 + col * 0.21 + row * 0.17 + state.levels.mid * 4);
+                }
+
+                var x = (col / Math.max(1, columns - 1) - 0.5) * 430;
+                var y = (0.5 - row / Math.max(1, rows - 1)) * 322;
+                var z = brightness * 300 - 150;
+                z += (brightness - 0.5) * state.levels.overall * 165;
+                pos[idx] = x;
+                pos[idx + 1] = y;
+                pos[idx + 2] = z;
+                color.setHSL((0.58 - brightness * 0.35 + state.levels.bass * 0.08) % 1, 0.78, 0.23 + brightness * 0.58);
+                colArr[idx] = color.r;
+                colArr[idx + 1] = color.g;
+                colArr[idx + 2] = color.b;
+              }
+            }
+
+            geometry.attributes.position.needsUpdate = true;
+            geometry.attributes.color.needsUpdate = true;
+            material.size = config.particleSize * (1.05 + state.levels.treble * 1.55);
+            glowMaterial.size = config.particleSize * (4.8 + state.levels.treble * 4.2);
+            glowMaterial.opacity = clamp(0.2 + state.levels.overall * 0.44, 0.14, 0.64);
+          }
+        };
+      }
+
+      function scheduleParticleRebuild() {
+        window.clearTimeout(state.rebuildTimer);
+        state.rebuildTimer = window.setTimeout(function () {
+          ["particles", "spiral", "emitter", "crown", "video"].forEach(function (id) {
+            if (state.modes[id]) {
+              rebuildMode(id);
+            }
+          });
+          syncModes();
+        }, 140);
+      }
+
+      function rebuildMode(id) {
+        var mode = state.modes[id];
+        if (!mode) {
+          return;
+        }
+        disposeObject(mode.object);
+        if (mode.object.parent) {
+          mode.object.parent.remove(mode.object);
+        }
+        delete state.modes[id];
+        if (config.enabledModes.indexOf(id) !== -1) {
+          ensureMode(id);
+        }
+      }
+
+      function updatePointSizes() {
+        Object.keys(state.modes).forEach(function (id) {
+          var mode = state.modes[id];
+          mode.object.traverse(function (child) {
+            if (child.material && child.material.isPointsMaterial) {
+              child.material.size = config.particleSize;
+            }
+          });
+        });
+      }
+
+      function disposeObject(object) {
+        if (!object) {
+          return;
+        }
+        object.traverse(function (child) {
+          if (child.geometry) {
+            child.geometry.dispose();
+          }
+          if (child.material) {
+            if (Array.isArray(child.material)) {
+              child.material.forEach(function (material) {
+                material.dispose();
+              });
+            } else {
+              child.material.dispose();
+            }
+          }
+        });
+      }
+
+      async function ensureAudioContext() {
+        if (!state.audioContext) {
+          var AudioContextCtor = window.AudioContext || window.webkitAudioContext;
+          state.audioContext = new AudioContextCtor();
+          state.analyser = state.audioContext.createAnalyser();
+          state.analyser.fftSize = 2048;
+          state.analyser.smoothingTimeConstant = 0.84;
+          state.outputGain = state.audioContext.createGain();
+          state.outputGain.gain.value = 0;
+          state.outputGain.connect(state.audioContext.destination);
+          state.outputConnected = true;
+          state.frequencyData = new Uint8Array(state.analyser.frequencyBinCount);
+          state.waveformData = new Uint8Array(state.analyser.fftSize);
+        }
+        if (state.outputGain && !state.outputConnected) {
+          state.outputGain.connect(state.audioContext.destination);
+          state.outputConnected = true;
+        }
+        if (state.audioContext.state === "suspended") {
+          await state.audioContext.resume();
+        }
+      }
+
+      function connectAudioSource(source, monitorOutput, inputKind) {
+        if (state.audioSource) {
+          try {
+            state.audioSource.disconnect();
+          } catch (error) {
+            // The node may already be disconnected after switching sources.
+          }
+        }
+        try {
+          state.analyser.disconnect();
+        } catch (error) {
+          // The analyser may not have an active output edge yet.
+        }
+        source.connect(state.analyser);
+        state.analyser.connect(state.outputGain);
+        if (monitorOutput) {
+          state.outputGain.gain.setTargetAtTime(1, state.audioContext.currentTime, 0.015);
+        } else {
+          state.outputGain.gain.setTargetAtTime(0, state.audioContext.currentTime, 0.015);
+        }
+        state.audioSource = source;
+        state.audioInputKind = inputKind || "unknown";
+      }
+
+      async function getMicrophoneStream() {
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+          throw new Error("getUserMedia unavailable");
+        }
+        try {
+          return await navigator.mediaDevices.getUserMedia({
+            audio: {
+              echoCancellation: false,
+              noiseSuppression: false,
+              autoGainControl: false
+            },
+            video: false
+          });
+        } catch (error) {
+          if (error && (error.name === "OverconstrainedError" || error.name === "ConstraintNotSatisfiedError" || error.name === "TypeError")) {
+            return navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+          }
+          throw error;
+        }
+      }
+
+      async function startMicrophone() {
+        try {
+          await ensureAudioContext();
+          if (state.micStream) {
+            state.micStream.getTracks().forEach(function (track) {
+              track.stop();
+            });
+          }
+          state.micStream = await getMicrophoneStream();
+          connectAudioSource(state.audioContext.createMediaStreamSource(state.micStream), false, "mic");
+          setStatus("Microphone", "Live audio analysis", "live");
+        } catch (error) {
+          setStatus("Microphone blocked", "Use HTTPS or localhost", "error");
+        }
+      }
+
+      async function loadAudioFile(event) {
+        var file = event.target.files && event.target.files[0];
+        if (!file) {
+          return;
+        }
+        try {
+          await ensureAudioContext();
+          var objectUrl = URL.createObjectURL(file);
+          els.audioElement.src = objectUrl;
+          els.audioElement.loop = true;
+          els.audioElement.crossOrigin = "anonymous";
+          if (!state.mediaElementSource) {
+            state.mediaElementSource = state.audioContext.createMediaElementSource(els.audioElement);
+          }
+          connectAudioSource(state.mediaElementSource, true, "file");
+          await els.audioElement.play();
+          setStatus("Audio File", file.name, "live");
+        } catch (error) {
+          setStatus("Audio error", "The selected file could not play", "error");
+        }
+      }
+
+      async function startWebcam() {
+        try {
+          if (state.videoStream) {
+            state.videoStream.getTracks().forEach(function (track) {
+              track.stop();
+            });
+          }
+          state.videoStream = await navigator.mediaDevices.getUserMedia({
+            video: {
+              width: { ideal: config.videoWidth },
+              height: { ideal: config.videoHeight }
+            },
+            audio: false
+          });
+          els.videoElement.srcObject = state.videoStream;
+          els.videoElement.muted = true;
+          els.videoElement.loop = false;
+          await els.videoElement.play();
+          state.videoReady = true;
+          enableVideoMode();
+          setStatus("Webcam", "Video depth input active", "live");
+        } catch (error) {
+          setStatus("Webcam blocked", "Use HTTPS or localhost", "error");
+        }
+      }
+
+      async function loadVideoFile(event) {
+        var file = event.target.files && event.target.files[0];
+        if (!file) {
+          return;
+        }
+        try {
+          if (state.videoStream) {
+            state.videoStream.getTracks().forEach(function (track) {
+              track.stop();
+            });
+            state.videoStream = null;
+          }
+          els.videoElement.srcObject = null;
+          els.videoElement.src = URL.createObjectURL(file);
+          els.videoElement.muted = true;
+          els.videoElement.loop = true;
+          await els.videoElement.play();
+          state.videoReady = true;
+          enableVideoMode();
+          setStatus("Video File", file.name, "live");
+        } catch (error) {
+          setStatus("Video error", "The selected file could not play", "error");
+        }
+      }
+
+      function enableVideoMode() {
+        if (config.enabledModes.indexOf("video") === -1) {
+          config.enabledModes.push("video");
+          document.querySelectorAll("[data-mode='video']").forEach(function (checkbox) {
+            checkbox.checked = true;
+          });
+          syncModes();
+        }
+      }
+
+      function savePreset() {
+        localStorage.setItem(CONFIG_KEY, JSON.stringify(config));
+        setStatus("Preset saved", "Configuration stored locally", "live");
+      }
+
+      function loadPreset() {
+        var saved = localStorage.getItem(CONFIG_KEY);
+        if (!saved) {
+          setStatus("No preset", "Nothing saved yet", "idle");
+          return;
+        }
+        try {
+          var parsed = JSON.parse(saved);
+          config = sanitizeConfig(Object.assign({}, config, parsed));
+          syncControlsFromConfig();
+          rebuildAllModes();
+          syncModes();
+          setStatus("Preset loaded", "Configuration restored", "live");
+        } catch (error) {
+          setStatus("Preset error", "Saved configuration is invalid", "error");
+        }
+      }
+
+      function downloadPreset() {
+        var payload = {
+          name: "VJ Cymatics 3D preset",
+          exportedAt: new Date().toISOString(),
+          config: config
+        };
+        var blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+        var link = document.createElement("a");
+        link.href = URL.createObjectURL(blob);
+        link.download = "vj-cymatics-3d-preset.json";
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        window.setTimeout(function () {
+          URL.revokeObjectURL(link.href);
+        }, 1000);
+        setStatus("Preset exported", "JSON download created", "live");
+      }
+
+      function sanitizeConfig(next) {
+        next.particleCount = clamp(Number(next.particleCount) || 0, 0, 10000);
+        next.particleSize = clamp(Number(next.particleSize) || 1, 0.1, 5);
+        next.rotationSpeedX = clamp(Number(next.rotationSpeedX) || 0, -1.5, 1.5);
+        next.rotationSpeedY = clamp(Number(next.rotationSpeedY) || 0, -1.5, 1.5);
+        next.manualRotationX = clamp(Number(next.manualRotationX) || 0, -180, 180);
+        next.manualRotationY = clamp(Number(next.manualRotationY) || 0, -180, 180);
+        next.glowStrength = clamp(Number(next.glowStrength) || 0, 0, 3);
+        next.sparkPower = clamp(Number(next.sparkPower) || 1.3, 0.4, 2.5);
+        next.videoWidth = clamp(Number(next.videoWidth) || 320, 120, 480);
+        next.videoHeight = Math.round(next.videoWidth * 0.75);
+        next.autoRotate = !!next.autoRotate;
+        next.enabledModes = Array.isArray(next.enabledModes)
+          ? next.enabledModes.filter(function (id) {
+            return MODE_IDS.indexOf(id) !== -1;
+          })
+          : [];
+        return next;
+      }
+
+      function rebuildAllModes() {
+        Object.keys(state.modes).forEach(function (id) {
+          rebuildMode(id);
+        });
+      }
+
+      function updateAudio() {
+        if (!state.analyser || !state.frequencyData) {
+          var idle = 0.08 + Math.sin(state.clock.elapsedTime * 1.4) * 0.025;
+          state.levels.bass = lerp(state.levels.bass, idle, 0.045);
+          state.levels.mid = lerp(state.levels.mid, idle * 0.75, 0.045);
+          state.levels.treble = lerp(state.levels.treble, idle * 0.55, 0.045);
+          state.levels.overall = (state.levels.bass + state.levels.mid + state.levels.treble) / 3;
+          return;
+        }
+
+        state.analyser.getByteFrequencyData(state.frequencyData);
+        state.analyser.getByteTimeDomainData(state.waveformData);
+        var bass = averageFrequency(20, 250);
+        var mid = averageFrequency(250, 2000);
+        var treble = averageFrequency(2000, 8000);
+        var overall = (bass * 1.1 + mid + treble * 0.9) / 3;
+
+        state.levels.bass = lerp(state.levels.bass, bass, 0.16);
+        state.levels.mid = lerp(state.levels.mid, mid, 0.13);
+        state.levels.treble = lerp(state.levels.treble, treble, 0.11);
+        state.levels.overall = lerp(state.levels.overall, overall, 0.14);
+      }
+
+      function averageFrequency(minHz, maxHz) {
+        if (!state.audioContext || !state.frequencyData) {
+          return 0;
+        }
+        var nyquist = state.audioContext.sampleRate / 2;
+        var start = Math.max(0, Math.floor(minHz / nyquist * state.frequencyData.length));
+        var end = Math.min(state.frequencyData.length - 1, Math.ceil(maxHz / nyquist * state.frequencyData.length));
+        if (end <= start) {
+          return 0;
+        }
+        var sum = 0;
+        for (var i = start; i <= end; i += 1) {
+          sum += state.frequencyData[i];
+        }
+        var inputBoost = state.audioInputKind === "mic" ? 3.4 : 1;
+        return clamp(sum / ((end - start + 1) * 255) * inputBoost, 0, 1);
+      }
+
+      function sampleFrequency(normalized) {
+        if (!state.frequencyData || state.frequencyData.length === 0) {
+          return 0.12 + Math.sin(state.clock.elapsedTime * 2 + normalized * 12) * 0.04;
+        }
+        var index = clamp(Math.floor(normalized * (state.frequencyData.length - 1)), 0, state.frequencyData.length - 1);
+        return state.frequencyData[index] / 255;
+      }
+
+      function renderWithGlow(time) {
+        var post = state.post;
+        if (!post || config.glowStrength <= 0) {
+          state.renderer.setRenderTarget(null);
+          state.renderer.render(state.scene, state.camera);
+          return;
+        }
+
+        state.renderer.setRenderTarget(post.sceneTarget);
+        state.renderer.clear();
+        state.renderer.render(state.scene, state.camera);
+
+        post.quad.material = post.brightMaterial;
+        post.brightMaterial.uniforms.tDiffuse.value = post.sceneTarget.texture;
+        post.brightMaterial.uniforms.threshold.value = 0.1 + state.levels.overall * 0.06;
+        post.brightMaterial.uniforms.intensity.value = 0.95 + state.levels.overall * 1.05;
+        state.renderer.setRenderTarget(post.bloomTargetA);
+        state.renderer.clear();
+        state.renderer.render(post.scene, post.camera);
+
+        post.quad.material = post.blurMaterial;
+        var source = post.bloomTargetA;
+        var target = post.bloomTargetB;
+        for (var i = 0; i < 6; i += 1) {
+          post.blurMaterial.uniforms.tDiffuse.value = source.texture;
+          post.blurMaterial.uniforms.direction.value.set(i % 2 === 0 ? 1 : 0, i % 2 === 0 ? 0 : 1);
+          state.renderer.setRenderTarget(target);
+          state.renderer.clear();
+          state.renderer.render(post.scene, post.camera);
+          var swap = source;
+          source = target;
+          target = swap;
+        }
+
+        post.quad.material = post.finalMaterial;
+        post.finalMaterial.uniforms.tScene.value = post.sceneTarget.texture;
+        post.finalMaterial.uniforms.tBloom.value = source.texture;
+        post.finalMaterial.uniforms.strength.value = config.glowStrength * (0.72 + state.levels.overall * 0.72);
+        post.finalMaterial.uniforms.saturation.value = 1.12 + state.levels.treble * 0.28;
+        post.finalMaterial.uniforms.time.value = time;
+        state.renderer.setRenderTarget(null);
+        state.renderer.clear();
+        state.renderer.render(post.scene, post.camera);
+      }
+
+      function resizeGlowPipeline() {
+        if (!state.post) {
+          return;
+        }
+        var dpr = Math.min(window.devicePixelRatio || 1, 2);
+        var width = Math.max(1, Math.floor(window.innerWidth * dpr));
+        var height = Math.max(1, Math.floor(window.innerHeight * dpr));
+        var bloomWidth = Math.max(1, Math.floor(width * 0.5));
+        var bloomHeight = Math.max(1, Math.floor(height * 0.5));
+        state.post.sceneTarget.setSize(width, height);
+        state.post.bloomTargetA.setSize(bloomWidth, bloomHeight);
+        state.post.bloomTargetB.setSize(bloomWidth, bloomHeight);
+        state.post.blurMaterial.uniforms.resolution.value.set(bloomWidth, bloomHeight);
+      }
+
+      function animate() {
+        requestAnimationFrame(animate);
+        var delta = Math.min(state.clock.getDelta(), 0.045);
+        var time = state.clock.elapsedTime;
+
+        updateAudio();
+        updateMeters();
+        updateRootRotation(delta);
+        if (state.atmosphere) {
+          state.atmosphere.visible = config.enabledModes.length > 0;
+          state.atmosphere.rotation.y += delta * 0.008;
+        }
+
+        Object.keys(state.modes).forEach(function (id) {
+          var mode = state.modes[id];
+          if (config.enabledModes.indexOf(id) === -1) {
+            if (mode.object) {
+              mode.object.visible = false;
+            }
+            return;
+          }
+          if (mode.object) {
+            mode.object.visible = true;
+          }
+          if (mode.update) {
+            mode.update(delta, time);
+          }
+        });
+
+        renderWithGlow(time);
+      }
+
+      function updateRootRotation(delta) {
+        if (config.autoRotate) {
+          state.root.rotation.x += delta * config.rotationSpeedX;
+          state.root.rotation.y += delta * config.rotationSpeedY;
+        } else {
+          state.root.rotation.x = lerp(state.root.rotation.x, state.targetRotation.x, 0.16);
+          state.root.rotation.y = lerp(state.root.rotation.y, state.targetRotation.y, 0.16);
+        }
+      }
+
+      function updateMeters() {
+        els.bassMeter.style.width = Math.round(clamp(state.levels.bass, 0, 1) * 100) + "%";
+        els.midMeter.style.width = Math.round(clamp(state.levels.mid, 0, 1) * 100) + "%";
+        els.trebleMeter.style.width = Math.round(clamp(state.levels.treble, 0, 1) * 100) + "%";
+      }
+
+      function resize() {
+        state.camera.aspect = window.innerWidth / window.innerHeight;
+        state.camera.updateProjectionMatrix();
+        state.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+        state.renderer.setSize(window.innerWidth, window.innerHeight);
+        resizeGlowPipeline();
+      }
+
+      function setStatus(title, text, tone) {
+        els.statusTitle.textContent = title;
+        els.statusText.textContent = text;
+        els.statusChip.classList.remove("live", "error");
+        if (tone === "live") {
+          els.statusChip.classList.add("live");
+        }
+        if (tone === "error") {
+          els.statusChip.classList.add("error");
+        }
+      }
+
+      function clamp(value, min, max) {
+        return Math.min(max, Math.max(min, value));
+      }
+
+      function lerp(a, b, t) {
+        return a + (b - a) * t;
+      }
+
+      function easeOutCubic(t) {
+        return 1 - Math.pow(1 - clamp(t, 0, 1), 3);
+      }
+    }());
+  </script>
+</body>
+</html>
