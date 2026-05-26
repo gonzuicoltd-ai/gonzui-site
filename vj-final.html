@@ -226,6 +226,38 @@
       padding: 0 10px;
     }
 
+    .prompt-stack {
+      display: grid;
+      gap: 8px;
+    }
+
+    .prompt-stack input[type="search"] {
+      width: 100%;
+      min-height: 36px;
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      background: rgba(255, 255, 255, 0.06);
+      color: var(--text);
+      padding: 0 11px;
+      font: inherit;
+      font-size: 12px;
+      font-weight: 650;
+      outline: none;
+    }
+
+    .prompt-stack input[type="search"]::placeholder {
+      color: rgba(169, 177, 191, 0.72);
+    }
+
+    .controller-status {
+      display: grid;
+      gap: 5px;
+      margin-top: 10px;
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 1.35;
+    }
+
     .file-button input {
       position: absolute;
       width: 1px;
@@ -320,6 +352,30 @@
       color: #d8dee8;
       font-size: 12px;
       font-weight: 700;
+    }
+
+    .effect-title {
+      min-width: 0;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .effect-title input[type="checkbox"] {
+      width: 16px;
+      height: 16px;
+      margin: 0;
+      accent-color: var(--cyan);
+      flex: 0 0 auto;
+      cursor: pointer;
+    }
+
+    .effect-title label {
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      cursor: pointer;
     }
 
     .range-control output {
@@ -569,12 +625,64 @@
           <div class="meter"><span>Mid</span><div class="meter-bar"><span id="midMeter"></span></div></div>
           <div class="meter"><span>Treble</span><div class="meter-bar"><span id="trebleMeter"></span></div></div>
         </div>
+        <div class="range-stack" style="margin-top: 12px;">
+          <div class="range-control">
+            <label for="micSensitivity">Mic Sensitivity</label>
+            <output id="micSensitivityValue">3.4</output>
+            <input id="micSensitivity" type="range" min="0.5" max="8" step="0.1" value="3.4">
+          </div>
+          <div class="range-control">
+            <label for="micNoiseGate">Noise Gate</label>
+            <output id="micNoiseGateValue">0.03</output>
+            <input id="micNoiseGate" type="range" min="0" max="0.25" step="0.01" value="0.03">
+          </div>
+        </div>
+      </section>
+
+      <section class="control-section">
+        <h2>Auto VJ</h2>
+        <div class="switch-row">
+          <span class="switch-label">Auto Performance</span>
+          <label class="switch" title="Auto VJ performance">
+            <input id="autoVjEnabled" type="checkbox">
+            <span></span>
+          </label>
+        </div>
+        <div class="controller-status">
+          <span id="autoVjBpm">BPM --</span>
+          <span id="autoVjCue">Waiting for audio</span>
+        </div>
+        <div class="range-stack" style="margin-top: 12px;">
+          <div class="range-control">
+            <label for="autoVjIntensity">Auto Intensity</label>
+            <output id="autoVjIntensityValue">0.65</output>
+            <input id="autoVjIntensity" type="range" min="0" max="1" step="0.01" value="0.65">
+          </div>
+          <div class="range-control">
+            <label for="autoVjScenePace">Scene Pace</label>
+            <output id="autoVjScenePaceValue">1.00</output>
+            <input id="autoVjScenePace" type="range" min="0.25" max="2" step="0.01" value="1">
+          </div>
+        </div>
+      </section>
+
+      <section class="control-section">
+        <h2>Controllers</h2>
+        <div class="button-row">
+          <button id="gamepadButton" type="button">PS5 Pad</button>
+          <button id="midiButton" type="button">MIDI</button>
+        </div>
+        <div class="controller-status">
+          <span id="gamepadStatus">Gamepad idle</span>
+          <span id="midiStatus">MIDI idle</span>
+        </div>
       </section>
 
       <section class="control-section">
         <h2>Visualization Modes</h2>
         <div class="mode-grid" id="modeGrid">
           <label class="check-tile"><input type="checkbox" data-mode="particles" checked><span>Particles</span></label>
+          <label class="check-tile"><input type="checkbox" data-mode="stardust"><span>Stardust</span></label>
           <label class="check-tile"><input type="checkbox" data-mode="wave" checked><span>Wave</span></label>
           <label class="check-tile"><input type="checkbox" data-mode="spiral" checked><span>Spiral</span></label>
           <label class="check-tile"><input type="checkbox" data-mode="emitter" checked><span>Emitter</span></label>
@@ -602,6 +710,11 @@
             <label for="particleCount">Particle Count</label>
             <output id="particleCountValue">1200</output>
             <input id="particleCount" type="range" min="0" max="10000" step="100" value="1200">
+          </div>
+          <div class="range-control">
+            <label for="stardustCount">Stardust Count</label>
+            <output id="stardustCountValue">3000</output>
+            <input id="stardustCount" type="range" min="500" max="10000" step="100" value="3000">
           </div>
           <div class="range-control">
             <label for="particleSize">Particle Size</label>
@@ -642,6 +755,89 @@
       </section>
 
       <section class="control-section">
+        <h2>Color</h2>
+        <div class="range-stack">
+          <div class="range-control">
+            <label for="colorHue">Hue</label>
+            <output id="colorHueValue">0</output>
+            <input id="colorHue" type="range" min="-180" max="180" step="1" value="0">
+          </div>
+          <div class="range-control">
+            <label for="colorSaturation">Saturation</label>
+            <output id="colorSaturationValue">1.00</output>
+            <input id="colorSaturation" type="range" min="0" max="2.5" step="0.01" value="1">
+          </div>
+        </div>
+      </section>
+
+      <section class="control-section">
+        <h2>Effects</h2>
+        <div class="mode-grid">
+          <label class="check-tile"><input id="kaleidoscopeEnabled" type="checkbox"><span>Kaleidoscope</span></label>
+          <label class="check-tile"><input id="mirrorVertical" type="checkbox"><span>Mirror V</span></label>
+          <label class="check-tile"><input id="mirrorHorizontal" type="checkbox"><span>Mirror H</span></label>
+        </div>
+        <div class="range-stack" style="margin-top: 12px;">
+          <div class="range-control">
+            <div class="effect-title">
+              <input id="kaleidoscopeReactive" type="checkbox" aria-label="Kaleidoscope audio reactive">
+              <label for="kaleidoscopeSides">Kaleidoscope Sides</label>
+            </div>
+            <output id="kaleidoscopeSidesValue">6</output>
+            <input id="kaleidoscopeSides" type="range" min="3" max="16" step="1" value="6">
+          </div>
+          <div class="range-control">
+            <div class="effect-title">
+              <input id="glitchReactive" type="checkbox" aria-label="Glitch audio reactive">
+              <label for="glitchStrength">Glitch</label>
+            </div>
+            <output id="glitchStrengthValue">0.00</output>
+            <input id="glitchStrength" type="range" min="0" max="1.5" step="0.01" value="0">
+          </div>
+          <div class="range-control">
+            <div class="effect-title">
+              <input id="grungeReactive" type="checkbox" aria-label="Grunge audio reactive">
+              <label for="grungeStrength">Grunge</label>
+            </div>
+            <output id="grungeStrengthValue">0.00</output>
+            <input id="grungeStrength" type="range" min="0" max="1.5" step="0.01" value="0">
+          </div>
+          <div class="range-control">
+            <div class="effect-title">
+              <input id="quakeReactive" type="checkbox" aria-label="Earthquake audio reactive">
+              <label for="quakeStrength">Earthquake</label>
+            </div>
+            <output id="quakeStrengthValue">0.00</output>
+            <input id="quakeStrength" type="range" min="0" max="1.5" step="0.01" value="0">
+          </div>
+          <div class="range-control">
+            <div class="effect-title">
+              <input id="zoomReactive" type="checkbox" aria-label="Zoom audio reactive">
+              <label for="zoomAmount">Zoom</label>
+            </div>
+            <output id="zoomAmountValue">1.00</output>
+            <input id="zoomAmount" type="range" min="0.5" max="2.5" step="0.01" value="1">
+          </div>
+          <div class="range-control">
+            <div class="effect-title">
+              <input id="mirrorVerticalReactive" type="checkbox" aria-label="Mirror vertical audio reactive">
+              <label for="mirrorVerticalPosition">Mirror V Position</label>
+            </div>
+            <output id="mirrorVerticalPositionValue">0.50</output>
+            <input id="mirrorVerticalPosition" type="range" min="0.05" max="0.95" step="0.01" value="0.5">
+          </div>
+          <div class="range-control">
+            <div class="effect-title">
+              <input id="mirrorHorizontalReactive" type="checkbox" aria-label="Mirror horizontal audio reactive">
+              <label for="mirrorHorizontalPosition">Mirror H Position</label>
+            </div>
+            <output id="mirrorHorizontalPositionValue">0.50</output>
+            <input id="mirrorHorizontalPosition" type="range" min="0.05" max="0.95" step="0.01" value="0.5">
+          </div>
+        </div>
+      </section>
+
+      <section class="control-section">
         <h2>Video Input</h2>
         <div class="button-row">
           <button id="webcamButton" type="button" title="ウェブカメラ">ウェブカメラ</button>
@@ -655,6 +851,17 @@
             <label for="videoResolution">Video Resolution</label>
             <output id="videoResolutionValue">320</output>
             <input id="videoResolution" type="range" min="120" max="480" step="20" value="320">
+          </div>
+        </div>
+      </section>
+
+      <section class="control-section">
+        <h2>AI Image</h2>
+        <div class="prompt-stack">
+          <input id="aiImagePrompt" type="search" autocomplete="off" placeholder="cymatic ice palace background">
+          <div class="button-row">
+            <button id="aiImageGenerate" type="button">Generate</button>
+            <button id="aiImageClear" type="button">Clear</button>
           </div>
         </div>
       </section>
@@ -684,8 +891,10 @@
       "use strict";
 
       var CONFIG_KEY = "vj-cymatics-3d-config-v1";
+      var AI_IMAGE_ENDPOINT = "/api/generate-image";
       var MODE_IDS = [
         "particles",
+        "stardust",
         "wave",
         "spiral",
         "emitter",
@@ -700,14 +909,40 @@
 
       var config = {
         particleCount: 1200,
+        stardustCount: 3000,
         particleSize: 1.8,
         rotationSpeedX: 0.18,
         rotationSpeedY: 0.31,
         autoRotate: true,
         manualRotationX: -10,
         manualRotationY: 20,
+        autoVjEnabled: false,
+        autoVjIntensity: 0.65,
+        autoVjScenePace: 1,
         glowStrength: 1.35,
         sparkPower: 1.3,
+        colorHue: 0,
+        colorSaturation: 1,
+        kaleidoscopeEnabled: false,
+        kaleidoscopeReactive: false,
+        kaleidoscopeSides: 6,
+        glitchStrength: 0,
+        glitchReactive: false,
+        grungeStrength: 0,
+        grungeReactive: false,
+        quakeStrength: 0,
+        quakeReactive: false,
+        zoomAmount: 1,
+        zoomReactive: false,
+        mirrorVertical: false,
+        mirrorVerticalReactive: false,
+        mirrorHorizontal: false,
+        mirrorHorizontalReactive: false,
+        mirrorVerticalPosition: 0.5,
+        mirrorHorizontalPosition: 0.5,
+        micSensitivity: 3.4,
+        micNoiseGate: 0.03,
+        aiImagePrompt: "",
         videoWidth: 320,
         videoHeight: 240,
         enabledModes: ["particles", "wave", "spiral", "emitter", "torus"]
@@ -757,19 +992,104 @@
         "uniform sampler2D tScene;",
         "uniform sampler2D tBloom;",
         "uniform float strength;",
+        "uniform float hueShift;",
         "uniform float saturation;",
+        "uniform float kaleidoscopeSides;",
+        "uniform float glitchStrength;",
+        "uniform float grungeStrength;",
+        "uniform float quakeStrength;",
+        "uniform float zoomAmount;",
+        "uniform float mirrorVertical;",
+        "uniform float mirrorHorizontal;",
+        "uniform float mirrorVerticalPosition;",
+        "uniform float mirrorHorizontalPosition;",
         "uniform float time;",
         "varying vec2 vUv;",
+        "const float TAU = 6.28318530718;",
+        "float random(vec2 p) {",
+        "  return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453123);",
+        "}",
+        "vec2 clampUv(vec2 uv) {",
+        "  return clamp(uv, vec2(0.001), vec2(0.999));",
+        "}",
+        "float mirrorCoord(float coord, float position) {",
+        "  position = clamp(position, 0.05, 0.95);",
+        "  if (coord > position) {",
+        "    coord = position - (coord - position) * (position / max(1.0 - position, 0.001));",
+        "  }",
+        "  return clamp(coord, 0.0, 1.0);",
+        "}",
+        "vec2 kaleidoscopeUv(vec2 uv, float sides) {",
+        "  vec2 p = uv - vec2(0.5);",
+        "  float radius = length(p);",
+        "  float angle = atan(p.y, p.x);",
+        "  float sector = TAU / max(sides, 3.0);",
+        "  angle = mod(angle + sector * 0.5, sector);",
+        "  angle = abs(angle - sector * 0.5);",
+        "  return vec2(cos(angle), sin(angle)) * radius + vec2(0.5);",
+        "}",
+        "vec2 glitchUv(vec2 uv, float amount, float t) {",
+        "  float row = floor(uv.y * 68.0);",
+        "  float block = random(vec2(row, floor(t * 13.0)));",
+        "  float hit = step(1.0 - amount * 0.28, block);",
+        "  float wave = sin(uv.y * 180.0 + t * 32.0) * amount * 0.002;",
+        "  uv.x += (random(vec2(row * 4.17, floor(t * 24.0))) - 0.5) * amount * hit * 0.16 + wave;",
+        "  uv.y += (random(vec2(floor(uv.y * 18.0), floor(t * 9.0))) - 0.5) * amount * hit * 0.022;",
+        "  return uv;",
+        "}",
+        "vec3 rotateHue(vec3 color, float angle) {",
+        "  float c = cos(angle);",
+        "  float s = sin(angle);",
+        "  mat3 hue = mat3(",
+        "    0.213 + c * 0.787 - s * 0.213, 0.213 - c * 0.213 + s * 0.143, 0.213 - c * 0.213 - s * 0.787,",
+        "    0.715 - c * 0.715 - s * 0.715, 0.715 + c * 0.285 + s * 0.140, 0.715 - c * 0.715 + s * 0.715,",
+        "    0.072 - c * 0.072 + s * 0.928, 0.072 - c * 0.072 - s * 0.283, 0.072 + c * 0.928 + s * 0.072",
+        "  );",
+        "  return clamp(hue * color, vec3(0.0), vec3(8.0));",
+        "}",
         "void main() {",
-        "  vec3 scene = texture2D(tScene, vUv).rgb;",
+        "  vec2 uv = vUv;",
+        "  float quake = clamp(quakeStrength, 0.0, 1.5);",
+        "  if (quake > 0.001) {",
+        "    float frame = floor(time * 42.0);",
+        "    vec2 jump = vec2(random(vec2(frame, 2.0)), random(vec2(5.0, frame))) - vec2(0.5);",
+        "    uv += jump * quake * 0.052 + vec2(sin(time * 77.0), cos(time * 63.0)) * quake * 0.006;",
+        "  }",
+        "  uv = (uv - vec2(0.5)) / max(zoomAmount, 0.05) + vec2(0.5);",
+        "  if (kaleidoscopeSides > 2.5) {",
+        "    uv = kaleidoscopeUv(uv, kaleidoscopeSides);",
+        "  }",
+        "  if (mirrorVertical > 0.5) {",
+        "    uv.x = mirrorCoord(uv.x, mirrorVerticalPosition);",
+        "  }",
+        "  if (mirrorHorizontal > 0.5) {",
+        "    uv.y = mirrorCoord(uv.y, mirrorHorizontalPosition);",
+        "  }",
+        "  uv = glitchUv(uv, clamp(glitchStrength, 0.0, 1.5), time);",
+        "  uv = clampUv(uv);",
         "  vec2 split = vec2(0.0018 + sin(time * 1.7) * 0.0007, 0.0);",
+        "  float glitchFlash = step(0.98, random(vec2(floor(vUv.y * 42.0), floor(time * 18.0))));",
+        "  vec2 glitchSplit = vec2(glitchStrength * (0.0025 + glitchFlash * 0.008), 0.0);",
+        "  vec3 scene;",
+        "  scene.r = texture2D(tScene, clampUv(uv + glitchSplit)).r;",
+        "  scene.g = texture2D(tScene, uv).g;",
+        "  scene.b = texture2D(tScene, clampUv(uv - glitchSplit)).b;",
         "  vec3 bloom;",
-        "  bloom.r = texture2D(tBloom, vUv + split).r;",
-        "  bloom.g = texture2D(tBloom, vUv).g;",
-        "  bloom.b = texture2D(tBloom, vUv - split).b;",
+        "  bloom.r = texture2D(tBloom, clampUv(uv + split + glitchSplit)).r;",
+        "  bloom.g = texture2D(tBloom, uv).g;",
+        "  bloom.b = texture2D(tBloom, clampUv(uv - split - glitchSplit)).b;",
         "  vec3 color = scene + bloom * strength + pow(max(bloom, 0.0), vec3(1.6)) * strength * 0.48;",
+        "  color = rotateHue(color, hueShift);",
         "  float luma = dot(color, vec3(0.2126, 0.7152, 0.0722));",
         "  color = mix(vec3(luma), color, saturation);",
+        "  float grain = random(uv * vec2(1200.0, 760.0) + vec2(time * 19.0, time * 11.0));",
+        "  float scan = sin((uv.y + time * 0.02) * 900.0) * 0.5 + 0.5;",
+        "  float scratch = step(0.992 - grungeStrength * 0.018, random(vec2(floor(uv.x * 140.0), floor(time * 5.0))));",
+        "  float dust = step(0.996 - grungeStrength * 0.02, random(floor(uv * vec2(260.0, 160.0)) + vec2(floor(time * 8.0))));",
+        "  color += (grain - 0.5) * grungeStrength * 0.22;",
+        "  color *= 1.0 - grungeStrength * (scan * 0.08 + scratch * 0.24);",
+        "  color += dust * grungeStrength * 0.48;",
+        "  color = max(color, vec3(0.0));",
         "  float vignette = smoothstep(0.92, 0.28, distance(vUv, vec2(0.5)));",
         "  color *= 0.84 + vignette * 0.22;",
         "  gl_FragColor = vec4(color, 1.0);",
@@ -782,20 +1102,40 @@
         header: document.getElementById("panelHeader"),
         minimize: document.getElementById("minimizeButton"),
         micButton: document.getElementById("micButton"),
+        gamepadButton: document.getElementById("gamepadButton"),
+        midiButton: document.getElementById("midiButton"),
         webcamButton: document.getElementById("webcamButton"),
         audioFile: document.getElementById("audioFile"),
         videoFile: document.getElementById("videoFile"),
         audioElement: document.getElementById("audioElement"),
         videoElement: document.getElementById("videoElement"),
+        gamepadStatus: document.getElementById("gamepadStatus"),
+        midiStatus: document.getElementById("midiStatus"),
+        aiImagePrompt: document.getElementById("aiImagePrompt"),
+        aiImageGenerate: document.getElementById("aiImageGenerate"),
+        aiImageClear: document.getElementById("aiImageClear"),
         statusChip: document.getElementById("statusChip"),
         statusTitle: document.getElementById("statusTitle"),
         statusText: document.getElementById("statusText"),
         bassMeter: document.getElementById("bassMeter"),
         midMeter: document.getElementById("midMeter"),
         trebleMeter: document.getElementById("trebleMeter"),
+        micSensitivity: document.getElementById("micSensitivity"),
+        micSensitivityValue: document.getElementById("micSensitivityValue"),
+        micNoiseGate: document.getElementById("micNoiseGate"),
+        micNoiseGateValue: document.getElementById("micNoiseGateValue"),
+        autoVjEnabled: document.getElementById("autoVjEnabled"),
+        autoVjIntensity: document.getElementById("autoVjIntensity"),
+        autoVjIntensityValue: document.getElementById("autoVjIntensityValue"),
+        autoVjScenePace: document.getElementById("autoVjScenePace"),
+        autoVjScenePaceValue: document.getElementById("autoVjScenePaceValue"),
+        autoVjBpm: document.getElementById("autoVjBpm"),
+        autoVjCue: document.getElementById("autoVjCue"),
         autoRotate: document.getElementById("autoRotate"),
         particleCount: document.getElementById("particleCount"),
         particleCountValue: document.getElementById("particleCountValue"),
+        stardustCount: document.getElementById("stardustCount"),
+        stardustCountValue: document.getElementById("stardustCountValue"),
         particleSize: document.getElementById("particleSize"),
         particleSizeValue: document.getElementById("particleSizeValue"),
         rotationSpeedX: document.getElementById("rotationSpeedX"),
@@ -810,6 +1150,34 @@
         glowStrengthValue: document.getElementById("glowStrengthValue"),
         sparkPower: document.getElementById("sparkPower"),
         sparkPowerValue: document.getElementById("sparkPowerValue"),
+        colorHue: document.getElementById("colorHue"),
+        colorHueValue: document.getElementById("colorHueValue"),
+        colorSaturation: document.getElementById("colorSaturation"),
+        colorSaturationValue: document.getElementById("colorSaturationValue"),
+        kaleidoscopeEnabled: document.getElementById("kaleidoscopeEnabled"),
+        kaleidoscopeReactive: document.getElementById("kaleidoscopeReactive"),
+        kaleidoscopeSides: document.getElementById("kaleidoscopeSides"),
+        kaleidoscopeSidesValue: document.getElementById("kaleidoscopeSidesValue"),
+        glitchReactive: document.getElementById("glitchReactive"),
+        glitchStrength: document.getElementById("glitchStrength"),
+        glitchStrengthValue: document.getElementById("glitchStrengthValue"),
+        grungeReactive: document.getElementById("grungeReactive"),
+        grungeStrength: document.getElementById("grungeStrength"),
+        grungeStrengthValue: document.getElementById("grungeStrengthValue"),
+        quakeReactive: document.getElementById("quakeReactive"),
+        quakeStrength: document.getElementById("quakeStrength"),
+        quakeStrengthValue: document.getElementById("quakeStrengthValue"),
+        zoomReactive: document.getElementById("zoomReactive"),
+        zoomAmount: document.getElementById("zoomAmount"),
+        zoomAmountValue: document.getElementById("zoomAmountValue"),
+        mirrorVertical: document.getElementById("mirrorVertical"),
+        mirrorVerticalReactive: document.getElementById("mirrorVerticalReactive"),
+        mirrorHorizontal: document.getElementById("mirrorHorizontal"),
+        mirrorHorizontalReactive: document.getElementById("mirrorHorizontalReactive"),
+        mirrorVerticalPosition: document.getElementById("mirrorVerticalPosition"),
+        mirrorVerticalPositionValue: document.getElementById("mirrorVerticalPositionValue"),
+        mirrorHorizontalPosition: document.getElementById("mirrorHorizontalPosition"),
+        mirrorHorizontalPositionValue: document.getElementById("mirrorHorizontalPositionValue"),
         videoResolution: document.getElementById("videoResolution"),
         videoResolutionValue: document.getElementById("videoResolutionValue"),
         savePreset: document.getElementById("savePreset"),
@@ -826,12 +1194,14 @@
         atmosphere: null,
         glowTexture: null,
         sparkTexture: null,
+        generatedImageTexture: null,
         clock: null,
         modes: Object.create(null),
         audioContext: null,
         analyser: null,
         outputGain: null,
         outputConnected: false,
+        audioUnlocked: false,
         audioSource: null,
         audioInputKind: "idle",
         mediaElementSource: null,
@@ -843,6 +1213,42 @@
         videoContext: null,
         videoReady: false,
         rebuildTimer: 0,
+        gamepadIndex: null,
+        gamepadPreviousButtons: [],
+        midiAccess: null,
+        midiCcMap: Object.create(null),
+        midiNoteMap: Object.create(null),
+        midiCcIndex: 0,
+        midiNoteIndex: 0,
+        controllerBoosts: {
+          glitch: 0,
+          grunge: 0,
+          quake: 0,
+          zoom: 0,
+          stardust: 0
+        },
+        autoVj: {
+          bpm: 0,
+          confidence: 0,
+          bassAverage: 0,
+          lastBass: 0,
+          lastBeatTime: 0,
+          beatThisFrame: false,
+          beatPulse: 0,
+          beatCount: 0,
+          lastSceneBeat: -64,
+          nextSceneTime: 0,
+          sceneIndex: 0,
+          lastOverall: 0,
+          statusTimer: 0
+        },
+        autoVjBoosts: {
+          glitch: 0,
+          grunge: 0,
+          quake: 0,
+          zoom: 0,
+          stardust: 0
+        },
         levels: {
           bass: 0,
           mid: 0,
@@ -902,6 +1308,9 @@
 
         bindControls();
         syncControlsFromConfig();
+        if (config.autoVjEnabled) {
+          startAutoVj();
+        }
         syncModes();
         window.addEventListener("resize", resize);
 
@@ -975,7 +1384,17 @@
             tScene: { value: null },
             tBloom: { value: null },
             strength: { value: config.glowStrength },
+            hueShift: { value: 0 },
             saturation: { value: 1.15 },
+            kaleidoscopeSides: { value: 0 },
+            glitchStrength: { value: 0 },
+            grungeStrength: { value: 0 },
+            quakeStrength: { value: 0 },
+            zoomAmount: { value: 1 },
+            mirrorVertical: { value: 0 },
+            mirrorHorizontal: { value: 0 },
+            mirrorVerticalPosition: { value: 0.5 },
+            mirrorHorizontalPosition: { value: 0.5 },
             time: { value: 0 }
           },
           vertexShader: SCREEN_VERTEX_SHADER,
@@ -1120,9 +1539,37 @@
           return String(Math.round(value));
         }, scheduleParticleRebuild);
 
+        bindRange(els.stardustCount, els.stardustCountValue, "stardustCount", 0, function (value) {
+          return String(Math.round(value));
+        }, scheduleStardustRebuild);
+
         bindRange(els.particleSize, els.particleSizeValue, "particleSize", 1, function (value) {
           return value.toFixed(1);
         }, updatePointSizes);
+
+        bindRange(els.micSensitivity, els.micSensitivityValue, "micSensitivity", 1, function (value) {
+          return value.toFixed(1);
+        });
+
+        bindRange(els.micNoiseGate, els.micNoiseGateValue, "micNoiseGate", 2, function (value) {
+          return value.toFixed(2);
+        });
+
+        bindToggle(els.autoVjEnabled, "autoVjEnabled", function (checked) {
+          if (checked) {
+            startAutoVj();
+          } else {
+            stopAutoVj();
+          }
+        });
+
+        bindRange(els.autoVjIntensity, els.autoVjIntensityValue, "autoVjIntensity", 2, function (value) {
+          return value.toFixed(2);
+        });
+
+        bindRange(els.autoVjScenePace, els.autoVjScenePaceValue, "autoVjScenePace", 2, function (value) {
+          return value.toFixed(2);
+        });
 
         bindRange(els.rotationSpeedX, els.rotationSpeedXValue, "rotationSpeedX", 2, function (value) {
           return value.toFixed(2);
@@ -1148,6 +1595,65 @@
           return value.toFixed(2);
         });
 
+        bindRange(els.colorHue, els.colorHueValue, "colorHue", 0, function (value) {
+          return String(Math.round(value));
+        });
+
+        bindRange(els.colorSaturation, els.colorSaturationValue, "colorSaturation", 2, function (value) {
+          return value.toFixed(2);
+        });
+
+        bindToggle(els.kaleidoscopeEnabled, "kaleidoscopeEnabled");
+        bindToggle(els.mirrorVertical, "mirrorVertical");
+        bindToggle(els.mirrorHorizontal, "mirrorHorizontal");
+        bindToggle(els.kaleidoscopeReactive, "kaleidoscopeReactive", function (checked) {
+          if (checked) {
+            enableKaleidoscope();
+          }
+        });
+        bindToggle(els.glitchReactive, "glitchReactive");
+        bindToggle(els.grungeReactive, "grungeReactive");
+        bindToggle(els.quakeReactive, "quakeReactive");
+        bindToggle(els.zoomReactive, "zoomReactive");
+        bindToggle(els.mirrorVerticalReactive, "mirrorVerticalReactive", function (checked) {
+          if (checked) {
+            enableMirrorVertical();
+          }
+        });
+        bindToggle(els.mirrorHorizontalReactive, "mirrorHorizontalReactive", function (checked) {
+          if (checked) {
+            enableMirrorHorizontal();
+          }
+        });
+
+        bindRange(els.kaleidoscopeSides, els.kaleidoscopeSidesValue, "kaleidoscopeSides", 0, function (value) {
+          return String(Math.round(value));
+        }, enableKaleidoscope);
+
+        bindRange(els.glitchStrength, els.glitchStrengthValue, "glitchStrength", 2, function (value) {
+          return value.toFixed(2);
+        });
+
+        bindRange(els.grungeStrength, els.grungeStrengthValue, "grungeStrength", 2, function (value) {
+          return value.toFixed(2);
+        });
+
+        bindRange(els.quakeStrength, els.quakeStrengthValue, "quakeStrength", 2, function (value) {
+          return value.toFixed(2);
+        });
+
+        bindRange(els.zoomAmount, els.zoomAmountValue, "zoomAmount", 2, function (value) {
+          return value.toFixed(2);
+        });
+
+        bindRange(els.mirrorVerticalPosition, els.mirrorVerticalPositionValue, "mirrorVerticalPosition", 2, function (value) {
+          return value.toFixed(2);
+        }, enableMirrorVertical);
+
+        bindRange(els.mirrorHorizontalPosition, els.mirrorHorizontalPositionValue, "mirrorHorizontalPosition", 2, function (value) {
+          return value.toFixed(2);
+        }, enableMirrorHorizontal);
+
         bindRange(els.videoResolution, els.videoResolutionValue, "videoWidth", 0, function (value) {
           return String(Math.round(value));
         }, updateVideoResolution);
@@ -1158,10 +1664,27 @@
           updateManualRotationTarget();
         });
 
+        els.micButton.addEventListener("pointerdown", primeAudioForGesture, { passive: true });
+        els.micButton.addEventListener("touchstart", primeAudioForGesture, { passive: true });
         els.micButton.addEventListener("click", startMicrophone);
+        els.gamepadButton.addEventListener("click", startGamepadControl);
+        els.midiButton.addEventListener("click", startMidiControl);
+        window.addEventListener("gamepadconnected", handleGamepadConnected);
+        window.addEventListener("gamepaddisconnected", handleGamepadDisconnected);
         els.webcamButton.addEventListener("click", startWebcam);
         els.audioFile.addEventListener("change", loadAudioFile);
         els.videoFile.addEventListener("change", loadVideoFile);
+        els.aiImagePrompt.addEventListener("input", function () {
+          config.aiImagePrompt = els.aiImagePrompt.value;
+        });
+        els.aiImagePrompt.addEventListener("keydown", function (event) {
+          if (event.key === "Enter") {
+            event.preventDefault();
+            generateAiImage();
+          }
+        });
+        els.aiImageGenerate.addEventListener("click", generateAiImage);
+        els.aiImageClear.addEventListener("click", clearAiImage);
 
         els.savePreset.addEventListener("click", savePreset);
         els.loadPreset.addEventListener("click", loadPreset);
@@ -1225,11 +1748,512 @@
         });
       }
 
+      function bindToggle(input, key, callback) {
+        input.addEventListener("change", function () {
+          config[key] = input.checked;
+          if (callback) {
+            callback(input.checked);
+          }
+        });
+      }
+
+      function setRangeControl(input, output, key, value, decimals, formatter, callback) {
+        var next = decimals === 0 ? Math.round(value) : value;
+        config[key] = next;
+        input.value = String(next);
+        output.textContent = formatter(next);
+        if (callback) {
+          callback();
+        }
+      }
+
+      function setToggleControl(input, key, checked, callback) {
+        config[key] = checked;
+        input.checked = checked;
+        if (callback) {
+          callback(checked);
+        }
+      }
+
+      function toggleMode(id) {
+        var index = config.enabledModes.indexOf(id);
+        if (index === -1) {
+          config.enabledModes.push(id);
+        } else {
+          config.enabledModes.splice(index, 1);
+        }
+        document.querySelectorAll("[data-mode='" + id + "']").forEach(function (checkbox) {
+          checkbox.checked = config.enabledModes.indexOf(id) !== -1;
+        });
+        syncModes();
+      }
+
+      function setModeEnabled(id, enabled) {
+        var index = config.enabledModes.indexOf(id);
+        if (enabled && index === -1) {
+          config.enabledModes.push(id);
+        }
+        if (!enabled && index !== -1) {
+          config.enabledModes.splice(index, 1);
+        }
+        document.querySelectorAll("[data-mode='" + id + "']").forEach(function (checkbox) {
+          checkbox.checked = config.enabledModes.indexOf(id) !== -1;
+        });
+      }
+
+      function setModeSet(ids) {
+        var next = [];
+        ids.forEach(function (id) {
+          if (MODE_IDS.indexOf(id) !== -1 && next.indexOf(id) === -1) {
+            next.push(id);
+          }
+        });
+        if (state.videoReady && config.enabledModes.indexOf("video") !== -1 && next.indexOf("video") === -1) {
+          next.push("video");
+        }
+        config.enabledModes = next;
+        document.querySelectorAll("[data-mode]").forEach(function (checkbox) {
+          checkbox.checked = config.enabledModes.indexOf(checkbox.getAttribute("data-mode")) !== -1;
+        });
+        syncModes();
+      }
+
+      function enableKaleidoscope() {
+        config.kaleidoscopeEnabled = true;
+        els.kaleidoscopeEnabled.checked = true;
+      }
+
+      function enableMirrorVertical() {
+        config.mirrorVertical = true;
+        els.mirrorVertical.checked = true;
+      }
+
+      function enableMirrorHorizontal() {
+        config.mirrorHorizontal = true;
+        els.mirrorHorizontal.checked = true;
+      }
+
+      function startGamepadControl() {
+        if (!("getGamepads" in navigator)) {
+          els.gamepadStatus.textContent = "Gamepad API unavailable";
+          return;
+        }
+        var gamepad = findGamepad();
+        if (!gamepad) {
+          els.gamepadStatus.textContent = "Press any PS5 button";
+          return;
+        }
+        state.gamepadIndex = gamepad.index;
+        state.gamepadPreviousButtons = gamepad.buttons.map(function (button) {
+          return !!button.pressed;
+        });
+        els.gamepadStatus.textContent = "Gamepad: " + gamepad.id.slice(0, 38);
+      }
+
+      function handleGamepadConnected(event) {
+        state.gamepadIndex = event.gamepad.index;
+        state.gamepadPreviousButtons = event.gamepad.buttons.map(function (button) {
+          return !!button.pressed;
+        });
+        els.gamepadStatus.textContent = "Gamepad: " + event.gamepad.id.slice(0, 38);
+      }
+
+      function handleGamepadDisconnected(event) {
+        if (state.gamepadIndex === event.gamepad.index) {
+          state.gamepadIndex = null;
+          state.gamepadPreviousButtons = [];
+          els.gamepadStatus.textContent = "Gamepad disconnected";
+        }
+      }
+
+      function findGamepad() {
+        var pads = navigator.getGamepads ? navigator.getGamepads() : [];
+        for (var i = 0; i < pads.length; i += 1) {
+          if (pads[i]) {
+            return pads[i];
+          }
+        }
+        return null;
+      }
+
+      async function startMidiControl() {
+        if (!("requestMIDIAccess" in navigator)) {
+          els.midiStatus.textContent = "Web MIDI unavailable";
+          return;
+        }
+        try {
+          state.midiAccess = await navigator.requestMIDIAccess({ sysex: false });
+          state.midiAccess.onstatechange = connectMidiInputs;
+          connectMidiInputs();
+        } catch (error) {
+          els.midiStatus.textContent = "MIDI permission blocked";
+        }
+      }
+
+      function connectMidiInputs() {
+        if (!state.midiAccess) {
+          return;
+        }
+        var count = 0;
+        state.midiAccess.inputs.forEach(function (input) {
+          input.onmidimessage = handleMidiMessage;
+          count += 1;
+        });
+        els.midiStatus.textContent = count > 0
+          ? "MIDI ready: touch APC40 controls"
+          : "No MIDI inputs found";
+      }
+
+      function handleMidiMessage(event) {
+        var data = event.data;
+        if (!data || data.length < 3) {
+          return;
+        }
+        var command = data[0] & 0xf0;
+        var channel = data[0] & 0x0f;
+        var number = data[1];
+        var value = data[2];
+        if (command === 0xb0) {
+          handleMidiControl(channel, number, value / 127);
+        } else if (command === 0x90 && value > 0) {
+          handleMidiNote(channel, number);
+        }
+      }
+
+      function handleMidiControl(channel, number, normalized) {
+        var key = channel + ":" + number;
+        var targets = ["particleCount", "stardustCount", "particleSize", "glowStrength", "colorHue", "colorSaturation", "glitchStrength", "zoomAmount"];
+        if (!state.midiCcMap[key]) {
+          state.midiCcMap[key] = targets[state.midiCcIndex % targets.length];
+          state.midiCcIndex += 1;
+        }
+        applyMidiControlTarget(state.midiCcMap[key], normalized);
+        els.midiStatus.textContent = "MIDI CC " + number + " -> " + state.midiCcMap[key];
+      }
+
+      function handleMidiNote(channel, number) {
+        var key = channel + ":" + number;
+        var targets = ["stardust", "particles", "crown", "kaleidoscope", "mirrorV", "mirrorH", "glitchReactive", "quakeReactive"];
+        if (!state.midiNoteMap[key]) {
+          state.midiNoteMap[key] = targets[state.midiNoteIndex % targets.length];
+          state.midiNoteIndex += 1;
+        }
+        applyMidiNoteTarget(state.midiNoteMap[key]);
+        els.midiStatus.textContent = "MIDI note " + number + " -> " + state.midiNoteMap[key];
+      }
+
+      function applyMidiControlTarget(target, normalized) {
+        if (target === "particleCount") {
+          setRangeControl(els.particleCount, els.particleCountValue, "particleCount", Math.round(normalized * 100) * 100, 0, function (value) {
+            return String(Math.round(value));
+          }, scheduleParticleRebuild);
+        } else if (target === "stardustCount") {
+          setRangeControl(els.stardustCount, els.stardustCountValue, "stardustCount", Math.round((500 + normalized * 9500) / 100) * 100, 0, function (value) {
+            return String(Math.round(value));
+          }, scheduleStardustRebuild);
+        } else if (target === "particleSize") {
+          setRangeControl(els.particleSize, els.particleSizeValue, "particleSize", 0.1 + normalized * 4.9, 1, function (value) {
+            return value.toFixed(1);
+          }, updatePointSizes);
+        } else if (target === "glowStrength") {
+          setRangeControl(els.glowStrength, els.glowStrengthValue, "glowStrength", normalized * 3, 2, function (value) {
+            return value.toFixed(2);
+          });
+        } else if (target === "colorHue") {
+          setRangeControl(els.colorHue, els.colorHueValue, "colorHue", -180 + normalized * 360, 0, function (value) {
+            return String(Math.round(value));
+          });
+        } else if (target === "colorSaturation") {
+          setRangeControl(els.colorSaturation, els.colorSaturationValue, "colorSaturation", normalized * 2.5, 2, function (value) {
+            return value.toFixed(2);
+          });
+        } else if (target === "glitchStrength") {
+          setRangeControl(els.glitchStrength, els.glitchStrengthValue, "glitchStrength", normalized * 1.5, 2, function (value) {
+            return value.toFixed(2);
+          });
+        } else if (target === "zoomAmount") {
+          setRangeControl(els.zoomAmount, els.zoomAmountValue, "zoomAmount", 0.5 + normalized * 2, 2, function (value) {
+            return value.toFixed(2);
+          });
+        }
+      }
+
+      function applyMidiNoteTarget(target) {
+        if (target === "stardust" || target === "particles" || target === "crown") {
+          toggleMode(target);
+        } else if (target === "kaleidoscope") {
+          setToggleControl(els.kaleidoscopeEnabled, "kaleidoscopeEnabled", !config.kaleidoscopeEnabled);
+        } else if (target === "mirrorV") {
+          setToggleControl(els.mirrorVertical, "mirrorVertical", !config.mirrorVertical);
+        } else if (target === "mirrorH") {
+          setToggleControl(els.mirrorHorizontal, "mirrorHorizontal", !config.mirrorHorizontal);
+        } else if (target === "glitchReactive") {
+          setToggleControl(els.glitchReactive, "glitchReactive", !config.glitchReactive);
+        } else if (target === "quakeReactive") {
+          setToggleControl(els.quakeReactive, "quakeReactive", !config.quakeReactive);
+        }
+      }
+
+      function startAutoVj() {
+        state.autoVj.lastSceneBeat = -64;
+        state.autoVj.nextSceneTime = 0;
+        els.autoVjCue.textContent = "Listening for beat";
+        applyAutoScene(state.clock ? state.clock.elapsedTime : 0, false);
+        setStatus("Auto VJ", "Performance mode active", "live");
+      }
+
+      function stopAutoVj() {
+        Object.keys(state.autoVjBoosts).forEach(function (key) {
+          state.autoVjBoosts[key] = 0;
+        });
+        els.autoVjCue.textContent = "Auto VJ paused";
+      }
+
+      function updateBpmDetector(delta, time) {
+        var auto = state.autoVj;
+        var bass = state.levels.bass;
+        auto.beatThisFrame = false;
+        auto.bassAverage = auto.bassAverage ? lerp(auto.bassAverage, bass, 0.045) : bass;
+        var threshold = Math.max(0.14, auto.bassAverage * 1.42 + 0.035);
+        var rising = bass > auto.lastBass + 0.018;
+        var elapsed = time - auto.lastBeatTime;
+
+        if (bass > threshold && rising && elapsed > 0.24) {
+          if (auto.lastBeatTime > 0 && elapsed < 1.35) {
+            var bpm = normalizeBpm(60 / elapsed);
+            auto.bpm = auto.bpm ? lerp(auto.bpm, bpm, 0.22) : bpm;
+            auto.confidence = clamp(auto.confidence + 0.16, 0, 1);
+          }
+          auto.lastBeatTime = time;
+          auto.beatThisFrame = true;
+          auto.beatPulse = 1;
+          auto.beatCount += 1;
+        }
+
+        if (elapsed > 2.6) {
+          auto.confidence = lerp(auto.confidence, 0, 0.035);
+        }
+        auto.beatPulse = Math.max(0, auto.beatPulse - delta * 4.2);
+        auto.lastBass = bass;
+        updateAutoVjStatus(time);
+      }
+
+      function normalizeBpm(bpm) {
+        while (bpm < 80) {
+          bpm *= 2;
+        }
+        while (bpm > 180) {
+          bpm *= 0.5;
+        }
+        return clamp(bpm, 60, 200);
+      }
+
+      function updateAutoVjStatus(time) {
+        if (time < state.autoVj.statusTimer) {
+          return;
+        }
+        state.autoVj.statusTimer = time + 0.18;
+        if (state.autoVj.bpm > 0 && state.autoVj.confidence > 0.12) {
+          els.autoVjBpm.textContent = "BPM " + Math.round(state.autoVj.bpm);
+        } else {
+          els.autoVjBpm.textContent = "BPM --";
+        }
+      }
+
+      function updateAutoVj(delta, time) {
+        decayAutoVjBoosts();
+        if (!config.autoVjEnabled) {
+          return;
+        }
+
+        var intensity = config.autoVjIntensity;
+        var bass = state.levels.bass;
+        var mid = state.levels.mid;
+        var treble = state.levels.treble;
+        var overall = state.levels.overall;
+        var auto = state.autoVj;
+
+        if (auto.beatThisFrame) {
+          pulseAutoVj(bass, mid, treble, overall, intensity);
+          var sceneBeats = clamp(Math.round(16 / Math.max(0.25, config.autoVjScenePace)), 4, 32);
+          if (auto.beatCount - auto.lastSceneBeat >= sceneBeats) {
+            applyAutoScene(time, false);
+          }
+        }
+
+        if (time > auto.nextSceneTime) {
+          applyAutoScene(time, false);
+        }
+
+        if (overall - auto.lastOverall > 0.13 && bass > 0.24) {
+          applyAutoDrop(time);
+        }
+        auto.lastOverall = overall;
+
+        var hueSpeed = (5 + treble * 62 + overall * 24) * intensity;
+        updateAutoHue(delta * hueSpeed);
+        setRangeControl(els.glowStrength, els.glowStrengthValue, "glowStrength", clamp(0.55 + overall * 1.95 * intensity + auto.beatPulse * 0.42, 0, 3), 2, function (value) {
+          return value.toFixed(2);
+        });
+        setRangeControl(els.sparkPower, els.sparkPowerValue, "sparkPower", clamp(0.7 + treble * 1.15 * intensity + auto.beatPulse * 0.34, 0.4, 2.5), 2, function (value) {
+          return value.toFixed(2);
+        });
+        if (config.zoomReactive || auto.beatPulse > 0.12) {
+          setRangeControl(els.zoomAmount, els.zoomAmountValue, "zoomAmount", clamp(1 + bass * 0.42 * intensity + auto.beatPulse * 0.14, 0.5, 2.5), 2, function (value) {
+            return value.toFixed(2);
+          });
+        }
+      }
+
+      function decayAutoVjBoosts() {
+        Object.keys(state.autoVjBoosts).forEach(function (key) {
+          state.autoVjBoosts[key] = lerp(state.autoVjBoosts[key], 0, 0.16);
+        });
+      }
+
+      function pulseAutoVj(bass, mid, treble, overall, intensity) {
+        state.autoVjBoosts.stardust = Math.max(state.autoVjBoosts.stardust, (overall * 0.45 + bass * 0.55) * intensity);
+        state.autoVjBoosts.quake = Math.max(state.autoVjBoosts.quake, bass * 0.95 * intensity);
+        state.autoVjBoosts.glitch = Math.max(state.autoVjBoosts.glitch, treble * 0.78 * intensity);
+        state.autoVjBoosts.grunge = Math.max(state.autoVjBoosts.grunge, mid * 0.42 * intensity);
+        state.autoVjBoosts.zoom = Math.max(state.autoVjBoosts.zoom, bass * 0.32 * intensity);
+      }
+
+      function applyAutoScene(time, forceDrop) {
+        var auto = state.autoVj;
+        var bass = state.levels.bass;
+        var mid = state.levels.mid;
+        var treble = state.levels.treble;
+        var scene = pickAutoScene(forceDrop);
+        setModeSet(scene.modes);
+        setToggleControl(els.kaleidoscopeEnabled, "kaleidoscopeEnabled", scene.kaleidoscope);
+        setToggleControl(els.mirrorVertical, "mirrorVertical", scene.mirrorVertical);
+        setToggleControl(els.mirrorHorizontal, "mirrorHorizontal", scene.mirrorHorizontal);
+        setToggleControl(els.glitchReactive, "glitchReactive", scene.glitchReactive);
+        setToggleControl(els.grungeReactive, "grungeReactive", scene.grungeReactive);
+        setToggleControl(els.quakeReactive, "quakeReactive", scene.quakeReactive);
+        setToggleControl(els.zoomReactive, "zoomReactive", scene.zoomReactive);
+        setRangeControl(els.kaleidoscopeSides, els.kaleidoscopeSidesValue, "kaleidoscopeSides", scene.sides, 0, function (value) {
+          return String(Math.round(value));
+        });
+        auto.lastSceneBeat = auto.beatCount;
+        var bpm = auto.bpm || 120;
+        var beats = clamp(Math.round(16 / Math.max(0.25, config.autoVjScenePace)), 4, 32);
+        auto.nextSceneTime = time + beats * 60 / bpm;
+        els.autoVjCue.textContent = scene.label + " / " + dominantBandName(bass, mid, treble);
+      }
+
+      function pickAutoScene(forceDrop) {
+        var bass = state.levels.bass;
+        var mid = state.levels.mid;
+        var treble = state.levels.treble;
+        state.autoVj.sceneIndex = (state.autoVj.sceneIndex + 1) % 4;
+
+        if (forceDrop || (bass > mid * 1.18 && bass > treble * 1.08)) {
+          return {
+            label: "Drop scene",
+            modes: ["stardust", "emitter", "torus"],
+            kaleidoscope: false,
+            mirrorVertical: false,
+            mirrorHorizontal: false,
+            glitchReactive: false,
+            grungeReactive: false,
+            quakeReactive: true,
+            zoomReactive: true,
+            sides: 6
+          };
+        }
+        if (treble > bass * 1.12 && treble > mid * 0.94) {
+          return {
+            label: "Spark scene",
+            modes: ["stardust", "wave", "torusKnot"],
+            kaleidoscope: true,
+            mirrorVertical: state.autoVj.sceneIndex % 2 === 0,
+            mirrorHorizontal: false,
+            glitchReactive: true,
+            grungeReactive: false,
+            quakeReactive: false,
+            zoomReactive: true,
+            sides: 8 + state.autoVj.sceneIndex * 2
+          };
+        }
+        if (mid > bass * 1.05) {
+          return {
+            label: "Shape scene",
+            modes: ["particles", "spiral", "icosahedron"],
+            kaleidoscope: state.autoVj.sceneIndex % 2 === 1,
+            mirrorVertical: false,
+            mirrorHorizontal: state.autoVj.sceneIndex % 2 === 0,
+            glitchReactive: false,
+            grungeReactive: true,
+            quakeReactive: false,
+            zoomReactive: false,
+            sides: 5 + state.autoVj.sceneIndex
+          };
+        }
+        return {
+          label: "Crown scene",
+          modes: ["crown", "stardust", "wave"],
+          kaleidoscope: state.autoVj.sceneIndex % 3 === 0,
+          mirrorVertical: false,
+          mirrorHorizontal: false,
+          glitchReactive: false,
+          grungeReactive: true,
+          quakeReactive: false,
+          zoomReactive: true,
+          sides: 10
+        };
+      }
+
+      function applyAutoDrop(time) {
+        state.autoVjBoosts.quake = Math.max(state.autoVjBoosts.quake, 1.1 * config.autoVjIntensity);
+        state.autoVjBoosts.stardust = Math.max(state.autoVjBoosts.stardust, 1.0 * config.autoVjIntensity);
+        state.autoVjBoosts.zoom = Math.max(state.autoVjBoosts.zoom, 0.46 * config.autoVjIntensity);
+        if (time > state.autoVj.nextSceneTime - 1.2) {
+          applyAutoScene(time, true);
+        }
+        els.autoVjCue.textContent = "Drop detected";
+      }
+
+      function updateAutoHue(amount) {
+        var hue = config.colorHue + amount;
+        while (hue > 180) {
+          hue -= 360;
+        }
+        while (hue < -180) {
+          hue += 360;
+        }
+        config.colorHue = hue;
+        els.colorHue.value = String(hue);
+        els.colorHueValue.textContent = String(Math.round(hue));
+      }
+
+      function dominantBandName(bass, mid, treble) {
+        if (bass >= mid && bass >= treble) {
+          return "low";
+        }
+        if (mid >= bass && mid >= treble) {
+          return "mid";
+        }
+        return "high";
+      }
+
       function syncControlsFromConfig() {
         els.particleCount.value = config.particleCount;
         els.particleCountValue.textContent = String(config.particleCount);
+        els.stardustCount.value = config.stardustCount;
+        els.stardustCountValue.textContent = String(config.stardustCount);
         els.particleSize.value = config.particleSize;
         els.particleSizeValue.textContent = config.particleSize.toFixed(1);
+        els.micSensitivity.value = config.micSensitivity;
+        els.micSensitivityValue.textContent = config.micSensitivity.toFixed(1);
+        els.micNoiseGate.value = config.micNoiseGate;
+        els.micNoiseGateValue.textContent = config.micNoiseGate.toFixed(2);
+        els.autoVjEnabled.checked = config.autoVjEnabled;
+        els.autoVjIntensity.value = config.autoVjIntensity;
+        els.autoVjIntensityValue.textContent = config.autoVjIntensity.toFixed(2);
+        els.autoVjScenePace.value = config.autoVjScenePace;
+        els.autoVjScenePaceValue.textContent = config.autoVjScenePace.toFixed(2);
         els.rotationSpeedX.value = config.rotationSpeedX;
         els.rotationSpeedXValue.textContent = config.rotationSpeedX.toFixed(2);
         els.rotationSpeedY.value = config.rotationSpeedY;
@@ -1242,9 +2266,38 @@
         els.glowStrengthValue.textContent = config.glowStrength.toFixed(2);
         els.sparkPower.value = config.sparkPower;
         els.sparkPowerValue.textContent = config.sparkPower.toFixed(2);
+        els.colorHue.value = config.colorHue;
+        els.colorHueValue.textContent = String(config.colorHue);
+        els.colorSaturation.value = config.colorSaturation;
+        els.colorSaturationValue.textContent = config.colorSaturation.toFixed(2);
+        els.kaleidoscopeEnabled.checked = config.kaleidoscopeEnabled;
+        els.kaleidoscopeReactive.checked = config.kaleidoscopeReactive;
+        els.kaleidoscopeSides.value = config.kaleidoscopeSides;
+        els.kaleidoscopeSidesValue.textContent = String(config.kaleidoscopeSides);
+        els.glitchReactive.checked = config.glitchReactive;
+        els.glitchStrength.value = config.glitchStrength;
+        els.glitchStrengthValue.textContent = config.glitchStrength.toFixed(2);
+        els.grungeReactive.checked = config.grungeReactive;
+        els.grungeStrength.value = config.grungeStrength;
+        els.grungeStrengthValue.textContent = config.grungeStrength.toFixed(2);
+        els.quakeReactive.checked = config.quakeReactive;
+        els.quakeStrength.value = config.quakeStrength;
+        els.quakeStrengthValue.textContent = config.quakeStrength.toFixed(2);
+        els.zoomReactive.checked = config.zoomReactive;
+        els.zoomAmount.value = config.zoomAmount;
+        els.zoomAmountValue.textContent = config.zoomAmount.toFixed(2);
+        els.mirrorVertical.checked = config.mirrorVertical;
+        els.mirrorVerticalReactive.checked = config.mirrorVerticalReactive;
+        els.mirrorHorizontal.checked = config.mirrorHorizontal;
+        els.mirrorHorizontalReactive.checked = config.mirrorHorizontalReactive;
+        els.mirrorVerticalPosition.value = config.mirrorVerticalPosition;
+        els.mirrorVerticalPositionValue.textContent = config.mirrorVerticalPosition.toFixed(2);
+        els.mirrorHorizontalPosition.value = config.mirrorHorizontalPosition;
+        els.mirrorHorizontalPositionValue.textContent = config.mirrorHorizontalPosition.toFixed(2);
         els.autoRotate.checked = config.autoRotate;
         els.videoResolution.value = config.videoWidth;
         els.videoResolutionValue.textContent = String(config.videoWidth);
+        els.aiImagePrompt.value = config.aiImagePrompt;
 
         document.querySelectorAll("[data-mode]").forEach(function (checkbox) {
           checkbox.checked = config.enabledModes.indexOf(checkbox.getAttribute("data-mode")) !== -1;
@@ -1295,6 +2348,8 @@
         var mode = null;
         if (id === "particles") {
           mode = createParticlesMode();
+        } else if (id === "stardust") {
+          mode = createStardustMode();
         } else if (id === "wave") {
           mode = createWaveMode();
         } else if (id === "spiral") {
@@ -1405,6 +2460,147 @@
             glowMaterial.opacity = clamp(0.22 + state.levels.overall * 0.46, 0.18, 0.72);
             group.rotation.y += delta * (0.08 + state.levels.mid * 0.42);
             group.rotation.z += delta * state.levels.bass * 0.18;
+          }
+        };
+      }
+
+      function createStardustMode() {
+        var count = clamp(Math.round(config.stardustCount) || 3000, 500, 10000);
+        var farZ = -1500;
+        var nearZ = 470;
+        var positions = new Float32Array(count * 3);
+        var colors = new Float32Array(count * 3);
+        var streakPositions = new Float32Array(count * 6);
+        var streakColors = new Float32Array(count * 6);
+        var seeds = new Float32Array(count * 4);
+        var color = new THREE.Color();
+
+        function resetStar(i, z) {
+          var radius = Math.pow(Math.random(), 0.52);
+          var angle = Math.random() * Math.PI * 2;
+          var spreadX = 610 + Math.random() * 520;
+          var spreadY = 370 + Math.random() * 330;
+          var idx = i * 3;
+          positions[idx] = Math.cos(angle) * radius * spreadX + THREE.MathUtils.randFloatSpread(46);
+          positions[idx + 1] = Math.sin(angle) * radius * spreadY + THREE.MathUtils.randFloatSpread(34);
+          positions[idx + 2] = z;
+          seeds[i * 4] = 0.55 + Math.random() * 1.35;
+          seeds[i * 4 + 1] = Math.random();
+          seeds[i * 4 + 2] = Math.random();
+          seeds[i * 4 + 3] = Math.random();
+        }
+
+        for (var i = 0; i < count; i += 1) {
+          resetStar(i, farZ + Math.random() * (nearZ - farZ));
+        }
+
+        var geometry = new THREE.BufferGeometry();
+        geometry.setAttribute("position", new THREE.BufferAttribute(positions, 3));
+        geometry.setAttribute("color", new THREE.BufferAttribute(colors, 3));
+
+        var streakGeometry = new THREE.BufferGeometry();
+        streakGeometry.setAttribute("position", new THREE.BufferAttribute(streakPositions, 3));
+        streakGeometry.setAttribute("color", new THREE.BufferAttribute(streakColors, 3));
+
+        var material = new THREE.PointsMaterial({
+          size: config.particleSize * 1.15,
+          map: getSparkTexture(),
+          vertexColors: true,
+          transparent: true,
+          opacity: 0.96,
+          depthWrite: false,
+          blending: THREE.AdditiveBlending
+        });
+
+        var glowMaterial = new THREE.PointsMaterial({
+          size: config.particleSize * 6.8,
+          map: getGlowTexture(),
+          vertexColors: true,
+          transparent: true,
+          opacity: 0.28,
+          depthWrite: false,
+          blending: THREE.AdditiveBlending
+        });
+
+        var streakMaterial = new THREE.LineBasicMaterial({
+          vertexColors: true,
+          transparent: true,
+          opacity: 0.36,
+          blending: THREE.AdditiveBlending,
+          depthWrite: false
+        });
+
+        var streaks = new THREE.LineSegments(streakGeometry, streakMaterial);
+        streaks.name = "stardust-streaks";
+        var glow = new THREE.Points(geometry, glowMaterial);
+        glow.name = "stardust-glow";
+        var points = new THREE.Points(geometry, material);
+        points.name = "stardust-core";
+        var group = new THREE.Group();
+        group.name = "stardust";
+        group.add(streaks);
+        group.add(glow);
+        group.add(points);
+
+        return {
+          attachToScene: true,
+          object: group,
+          update: function (delta, time) {
+            var controllerBoost = state.controllerBoosts ? state.controllerBoosts.stardust : 0;
+            var autoBoost = state.autoVjBoosts ? state.autoVjBoosts.stardust : 0;
+            var boost = Math.max(controllerBoost, autoBoost);
+            var speed = 190 + state.levels.overall * 620 + state.levels.bass * 920 + boost * 880;
+            var streakBase = 18 + state.levels.overall * 92 + state.levels.bass * 165 + boost * 150;
+            var pos = geometry.attributes.position.array;
+            var col = geometry.attributes.color.array;
+            var linePos = streakGeometry.attributes.position.array;
+            var lineCol = streakGeometry.attributes.color.array;
+
+            for (var i = 0; i < count; i += 1) {
+              var idx = i * 3;
+              var seedIdx = i * 4;
+              var freq = sampleFrequency(seeds[seedIdx + 1]);
+              var drift = Math.sin(time * (0.55 + seeds[seedIdx + 2]) + seeds[seedIdx + 3] * 20) * delta * (3 + state.levels.mid * 18);
+              pos[idx] += drift;
+              pos[idx + 1] += Math.cos(time * (0.45 + seeds[seedIdx + 3]) + seeds[seedIdx + 2] * 16) * delta * (2 + state.levels.treble * 14);
+              pos[idx + 2] += delta * speed * seeds[seedIdx] * (0.8 + freq * 0.55);
+
+              if (pos[idx + 2] > nearZ) {
+                resetStar(i, farZ - Math.random() * 220);
+              }
+
+              var depth = clamp((pos[idx + 2] - farZ) / (nearZ - farZ), 0, 1);
+              var light = clamp(0.22 + depth * 0.72 + freq * 0.22 + state.levels.treble * 0.26, 0, 1);
+              color.setHSL((0.55 + freq * 0.08 + state.levels.bass * 0.04) % 1, 0.26 + freq * 0.42, light);
+              col[idx] = color.r;
+              col[idx + 1] = color.g;
+              col[idx + 2] = color.b;
+
+              var lineIdx = i * 6;
+              var streakLength = streakBase * (0.55 + depth * 1.8 + seeds[seedIdx] * 0.55);
+              linePos[lineIdx] = pos[idx];
+              linePos[lineIdx + 1] = pos[idx + 1];
+              linePos[lineIdx + 2] = pos[idx + 2];
+              linePos[lineIdx + 3] = pos[idx];
+              linePos[lineIdx + 4] = pos[idx + 1];
+              linePos[lineIdx + 5] = pos[idx + 2] - streakLength;
+
+              lineCol[lineIdx] = color.r;
+              lineCol[lineIdx + 1] = color.g;
+              lineCol[lineIdx + 2] = color.b;
+              lineCol[lineIdx + 3] = color.r * 0.15;
+              lineCol[lineIdx + 4] = color.g * 0.15;
+              lineCol[lineIdx + 5] = color.b * 0.15;
+            }
+
+            geometry.attributes.position.needsUpdate = true;
+            geometry.attributes.color.needsUpdate = true;
+            streakGeometry.attributes.position.needsUpdate = true;
+            streakGeometry.attributes.color.needsUpdate = true;
+            material.size = config.particleSize * (0.95 + state.levels.treble * 1.35);
+            glowMaterial.size = config.particleSize * (5.6 + state.levels.overall * 5.8 + config.sparkPower * 0.8);
+            glowMaterial.opacity = clamp(0.18 + state.levels.overall * 0.34, 0.14, 0.58);
+            streakMaterial.opacity = clamp(0.18 + state.levels.bass * 0.42 + state.levels.overall * 0.24, 0.14, 0.72);
           }
         };
       }
@@ -2103,6 +3299,42 @@
           group.add(ring);
         });
 
+        var laceRidges = [];
+        [
+          { radius: 122, y: 8, depth: 0.62, height: 44, symmetry: 8, color: 0xf4fbff },
+          { radius: 176, y: -16, depth: 0.66, height: 62, symmetry: 10, color: 0xbfeeff },
+          { radius: 236, y: -40, depth: 0.68, height: 78, symmetry: 14, color: 0xdff7ff },
+          { radius: 302, y: -74, depth: 0.7, height: 94, symmetry: 18, color: 0x61d9ff }
+        ].forEach(function (ridgeConfig, ridgeIndex) {
+          var ridgeCount = 360;
+          var ridgeGeometry = new THREE.BufferGeometry();
+          var ridgePositions = new Float32Array(ridgeCount * 3);
+          for (var r = 0; r < ridgeCount; r += 1) {
+            var theta = r / ridgeCount * Math.PI * 2;
+            ridgePositions[r * 3] = Math.cos(theta) * ridgeConfig.radius;
+            ridgePositions[r * 3 + 1] = ridgeConfig.y;
+            ridgePositions[r * 3 + 2] = Math.sin(theta) * ridgeConfig.radius * ridgeConfig.depth;
+          }
+          ridgeGeometry.setAttribute("position", new THREE.BufferAttribute(ridgePositions, 3));
+          var ridgeMaterial = new THREE.LineBasicMaterial({
+            color: ridgeConfig.color,
+            transparent: true,
+            opacity: 0.36,
+            depthWrite: false,
+            blending: THREE.AdditiveBlending
+          });
+          var ridgeLine = new THREE.LineLoop(ridgeGeometry, ridgeMaterial);
+          ridgeLine.name = "crown-lace-ridge";
+          laceRidges.push({
+            geometry: ridgeGeometry,
+            material: ridgeMaterial,
+            config: ridgeConfig,
+            count: ridgeCount,
+            phase: ridgeIndex * 0.87
+          });
+          group.add(ridgeLine);
+        });
+
         var orbUpdaters = [];
         function addReactiveOrb(options) {
           var orbGroup = new THREE.Group();
@@ -2170,38 +3402,24 @@
           function setWaveRingPoint(target, idx, theta, ringRadius, ringY, waveLift, band) {
             var localX = Math.cos(theta) * ringRadius;
             var localY = ringY + waveLift;
-            var localZ = Math.sin(theta) * ringRadius;
-
-            var y1 = localY * band.cosX - localZ * band.sinX;
-            var z1 = localY * band.sinX + localZ * band.cosX;
-            var x1 = localX;
-
-            var x2 = x1 * band.cosZ - y1 * band.sinZ;
-            var y2 = x1 * band.sinZ + y1 * band.cosZ;
-            var z2 = z1;
-
-            target[idx] = x2 * band.cosY + z2 * band.sinY;
-            target[idx + 1] = y2;
-            target[idx + 2] = -x2 * band.sinY + z2 * band.cosY;
+            var localZ = Math.sin(theta) * ringRadius * band.depth;
+            target[idx] = localX * band.cosY + localZ * band.sinY;
+            target[idx + 1] = localY;
+            target[idx + 2] = -localX * band.sinY + localZ * band.cosY;
           }
 
           for (var bandIndex = 0; bandIndex < waveBandCount; bandIndex += 1) {
             var bandProgress = waveBandCount === 1 ? 0.5 : bandIndex / (waveBandCount - 1);
             var latitude = (bandProgress - 0.5) * 1.2;
-            var bandY = latitude * options.radius * 0.92;
-            var ringRadius = options.radius * (1.36 - Math.abs(latitude) * 0.26);
-            var tiltX = (bandProgress - 0.5) * (options.waveTiltX || 0.86);
-            var tiltZ = Math.sin(options.phase + bandIndex * 1.31) * (options.waveTiltZ || 0.42);
-            var spinY = options.phase + bandIndex * (Math.PI / Math.max(1, waveBandCount));
+            var bandY = latitude * options.radius * 0.54;
+            var ringRadius = options.radius * (1.48 - Math.abs(latitude) * 0.2);
+            var spinY = options.phase * 0.08 + bandIndex * (options.waveSpinStep || 0.08);
             var band = {
               y: bandY,
               radius: ringRadius,
-              sinX: Math.sin(tiltX),
-              cosX: Math.cos(tiltX),
               sinY: Math.sin(spinY),
               cosY: Math.cos(spinY),
-              sinZ: Math.sin(tiltZ),
-              cosZ: Math.cos(tiltZ)
+              depth: options.waveDepthScale || 0.58
             };
             var wavePositions = new Float32Array(waveSegments * 3);
             var waveColors = new Float32Array(waveSegments * 3);
@@ -2233,12 +3451,9 @@
               material: waveMaterial,
               y: bandY,
               radius: ringRadius,
-              sinX: band.sinX,
-              cosX: band.cosX,
               sinY: band.sinY,
               cosY: band.cosY,
-              sinZ: band.sinZ,
-              cosZ: band.cosZ,
+              depth: band.depth,
               phase: options.phase + bandIndex * 1.17,
               count: waveSegments
             });
@@ -2271,9 +3486,10 @@
             });
             var torus = new THREE.Mesh(torusGeometry, torusMaterial);
             torus.name = options.name + "-wave-torus";
-            torus.rotation.x = (torusIndex - (torusCount - 1) * 0.5) * (options.torusTiltX || 0.46);
-            torus.rotation.y = options.phase * 0.28 + torusIndex * (options.torusTiltY || 0.38);
-            torus.rotation.z = torusIndex * 0.72;
+            torus.rotation.x = Math.PI * 0.5;
+            torus.rotation.y = options.phase * 0.08 + torusIndex * (options.torusYawStep || 0.08);
+            torus.rotation.z = 0;
+            torus.scale.set(1, options.torusDepthScale || 0.58, 1);
             orbGroup.add(torus);
             torusBands.push({
               mesh: torus,
@@ -2282,7 +3498,9 @@
               base: torusBase,
               angles: torusAngles,
               phase: options.phase + torusIndex * 1.43,
-              count: torusPosition.count
+              count: torusPosition.count,
+              depth: options.torusDepthScale || 0.58,
+              baseYaw: options.phase * 0.08 + torusIndex * (options.torusYawStep || 0.08)
             });
           }
 
@@ -2353,8 +3571,11 @@
               }
               torusBand.geometry.attributes.position.needsUpdate = true;
               torusBand.material.opacity = clamp(0.16 + waveValue * 0.42 + value * 0.16, 0.12, 0.78);
-              torusBand.mesh.scale.setScalar(1 + value * (options.torusPulse || 0.2));
-              torusBand.mesh.rotation.z = torusIndex * 0.72 + time * value * (options.torusSpin || 0.36);
+              var torusScale = 1 + value * (options.torusPulse || 0.2);
+              torusBand.mesh.scale.set(torusScale, torusBand.depth * torusScale, torusScale);
+              torusBand.mesh.rotation.x = Math.PI * 0.5;
+              torusBand.mesh.rotation.y = torusBand.baseYaw + Math.sin(time * 0.35 + torusIndex) * value * (options.torusDrift || 0.035);
+              torusBand.mesh.rotation.z = 0;
             });
           });
 
@@ -2380,17 +3601,19 @@
           waveSpeed: 2.2,
           wavePointScale: 0.7,
           wavePointPulse: 1.25,
-          waveTiltX: 1.05,
-          waveTiltZ: 0.5,
+          waveDepthScale: 0.56,
+          waveSpinStep: 0.04,
           torusCount: 2,
           torusSegments: 192,
-          torusRadiusScale: 1.58,
-          torusTubeScale: 0.018,
-          torusCycles: 4.2,
-          torusAmp: 0.16,
+          torusRadiusScale: 1.42,
+          torusTubeScale: 0.012,
+          torusDepthScale: 0.52,
+          torusYawStep: 0.03,
+          torusCycles: 5.2,
+          torusAmp: 0.12,
           torusSpeed: 2.4,
-          torusPulse: 0.18,
-          torusSpin: 0.18,
+          torusPulse: 0.12,
+          torusDrift: 0.02,
           waveFloor: 0.04
         });
 
@@ -2416,17 +3639,19 @@
             waveSpeed: 4.2,
             wavePointScale: 0.54,
             wavePointPulse: 1.45,
-            waveTiltX: 1.18,
-            waveTiltZ: 0.72,
+            waveDepthScale: 0.52,
+            waveSpinStep: 0.045,
             torusCount: 1,
             torusSegments: 128,
-            torusRadiusScale: 1.62,
-            torusTubeScale: 0.026,
-            torusCycles: 6.4,
-            torusAmp: 0.25,
+            torusRadiusScale: 1.36,
+            torusTubeScale: 0.017,
+            torusDepthScale: 0.5,
+            torusYawStep: 0.035,
+            torusCycles: 7.2,
+            torusAmp: 0.18,
             torusSpeed: 4.4,
-            torusPulse: 0.25,
-            torusSpin: 0.42,
+            torusPulse: 0.16,
+            torusDrift: 0.025,
             waveFloor: 0.035
           }));
         }
@@ -2452,17 +3677,19 @@
             waveSpeed: 6.1,
             wavePointScale: 0.48,
             wavePointPulse: 1.8,
-            waveTiltX: 0.92,
-            waveTiltZ: 0.86,
+            waveDepthScale: 0.46,
+            waveSpinStep: 0.035,
             torusCount: index === 0 ? 2 : 1,
             torusSegments: index === 0 ? 144 : 112,
-            torusRadiusScale: 1.56,
-            torusTubeScale: 0.028,
-            torusCycles: 9.2,
-            torusAmp: 0.34,
+            torusRadiusScale: 1.3,
+            torusTubeScale: 0.018,
+            torusDepthScale: 0.46,
+            torusYawStep: 0.025,
+            torusCycles: 10.4,
+            torusAmp: 0.22,
             torusSpeed: 6.6,
-            torusPulse: 0.32,
-            torusSpin: 0.72,
+            torusPulse: 0.2,
+            torusDrift: 0.03,
             waveFloor: 0.03
           }));
         });
@@ -2548,6 +3775,23 @@
               ring.scale.setScalar(1 + low * 0.08 + mid * 0.04 + index * high * 0.01);
               ring.material.opacity = clamp(0.1 + low * 0.15 + high * 0.08, 0.08, 0.36);
               ring.rotation.y += delta * (0.04 + index * 0.004);
+            });
+
+            laceRidges.forEach(function (ridge, index) {
+              var ridgeArr = ridge.geometry.attributes.position.array;
+              var ridgeConfig = ridge.config;
+              var ridgeEnergy = index < 2 ? mid : high;
+              for (var r = 0; r < ridge.count; r += 1) {
+                var theta = r / ridge.count * Math.PI * 2;
+                var scallop = Math.pow((Math.cos(theta * ridgeConfig.symmetry) + 1) * 0.5, 5);
+                var shimmer = Math.sin(theta * ridgeConfig.symmetry * 2 + time * (1.4 + index * 0.5) + ridge.phase);
+                var radius = ridgeConfig.radius + low * ridgeConfig.radius * 0.035 + shimmer * ridgeEnergy * 8;
+                ridgeArr[r * 3] = Math.cos(theta) * radius;
+                ridgeArr[r * 3 + 1] = ridgeConfig.y + scallop * ridgeConfig.height * (0.68 + ridgeEnergy * 0.72) + shimmer * ridgeEnergy * 10;
+                ridgeArr[r * 3 + 2] = Math.sin(theta) * radius * ridgeConfig.depth;
+              }
+              ridge.geometry.attributes.position.needsUpdate = true;
+              ridge.material.opacity = clamp(0.26 + ridgeEnergy * 0.38 + overall * 0.12, 0.18, 0.76);
             });
 
             var snowArr = snowGeometry.attributes.position.array;
@@ -2696,6 +3940,16 @@
         }, 140);
       }
 
+      function scheduleStardustRebuild() {
+        window.clearTimeout(state.stardustRebuildTimer);
+        state.stardustRebuildTimer = window.setTimeout(function () {
+          if (state.modes.stardust) {
+            rebuildMode("stardust");
+          }
+          syncModes();
+        }, 140);
+      }
+
       function rebuildMode(id) {
         var mode = state.modes[id];
         if (!mode) {
@@ -2745,6 +3999,9 @@
       async function ensureAudioContext() {
         if (!state.audioContext) {
           var AudioContextCtor = window.AudioContext || window.webkitAudioContext;
+          if (!AudioContextCtor) {
+            throw new Error("AudioContext unavailable");
+          }
           state.audioContext = new AudioContextCtor();
           state.analyser = state.audioContext.createAnalyser();
           state.analyser.fftSize = 2048;
@@ -2762,6 +4019,42 @@
         }
         if (state.audioContext.state === "suspended") {
           await state.audioContext.resume();
+        }
+      }
+
+      function isIOSDevice() {
+        return /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+          (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+      }
+
+      function isSafariBrowser() {
+        return /^((?!chrome|android|crios|fxios|edgios).)*safari/i.test(navigator.userAgent);
+      }
+
+      function isSecureMediaContext() {
+        return window.isSecureContext ||
+          location.protocol === "https:" ||
+          location.hostname === "localhost" ||
+          location.hostname === "127.0.0.1";
+      }
+
+      function isIOSSafari() {
+        return isIOSDevice() && isSafariBrowser();
+      }
+
+      async function primeAudioForGesture() {
+        try {
+          await ensureAudioContext();
+          if (!state.audioUnlocked) {
+            var buffer = state.audioContext.createBuffer(1, 1, state.audioContext.sampleRate);
+            var source = state.audioContext.createBufferSource();
+            source.buffer = buffer;
+            source.connect(state.outputGain);
+            source.start(0);
+            state.audioUnlocked = true;
+          }
+        } catch (error) {
+          // The main microphone handler will surface a user-facing status.
         }
       }
 
@@ -2790,8 +4083,14 @@
       }
 
       async function getMicrophoneStream() {
+        if (!isSecureMediaContext()) {
+          throw new Error("secure-context-required");
+        }
         if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
           throw new Error("getUserMedia unavailable");
+        }
+        if (isIOSSafari()) {
+          return navigator.mediaDevices.getUserMedia({ audio: true, video: false });
         }
         try {
           return await navigator.mediaDevices.getUserMedia({
@@ -2803,7 +4102,10 @@
             video: false
           });
         } catch (error) {
-          if (error && (error.name === "OverconstrainedError" || error.name === "ConstraintNotSatisfiedError" || error.name === "TypeError")) {
+          if (error && (error.name === "NotAllowedError" || error.name === "SecurityError")) {
+            throw error;
+          }
+          if (error && (error.name === "OverconstrainedError" || error.name === "ConstraintNotSatisfiedError" || error.name === "TypeError" || error.name === "NotReadableError" || error.name === "AbortError")) {
             return navigator.mediaDevices.getUserMedia({ audio: true, video: false });
           }
           throw error;
@@ -2812,17 +4114,34 @@
 
       async function startMicrophone() {
         try {
+          if (!isSecureMediaContext()) {
+            setStatus("Microphone needs HTTPS", "iPhone Safari requires HTTPS", "error");
+            return;
+          }
           await ensureAudioContext();
+          await primeAudioForGesture();
           if (state.micStream) {
             state.micStream.getTracks().forEach(function (track) {
               track.stop();
             });
           }
           state.micStream = await getMicrophoneStream();
+          state.micStream.getAudioTracks().forEach(function (track) {
+            track.enabled = true;
+          });
           connectAudioSource(state.audioContext.createMediaStreamSource(state.micStream), false, "mic");
+          if (state.audioContext.state === "suspended") {
+            await state.audioContext.resume();
+          }
           setStatus("Microphone", "Live audio analysis", "live");
         } catch (error) {
-          setStatus("Microphone blocked", "Use HTTPS or localhost", "error");
+          if (error && error.message === "secure-context-required") {
+            setStatus("Microphone needs HTTPS", "iPhone Safari requires HTTPS", "error");
+          } else if (error && error.name === "NotAllowedError") {
+            setStatus("Microphone blocked", "Allow mic access in Safari", "error");
+          } else {
+            setStatus("Microphone error", "Try HTTPS and reload Safari", "error");
+          }
         }
       }
 
@@ -2909,6 +4228,132 @@
         }
       }
 
+      async function generateAiImage() {
+        var prompt = els.aiImagePrompt.value.trim();
+        if (!prompt) {
+          setStatus("AI Image", "Enter a prompt first", "idle");
+          return;
+        }
+        config.aiImagePrompt = prompt;
+        if (window.location.protocol === "file:" && typeof window.VJ_AI_IMAGE_GENERATOR !== "function") {
+          setStatus("AI Image needs server", "Open through localhost or HTTPS", "error");
+          return;
+        }
+
+        els.aiImageGenerate.disabled = true;
+        setStatus("AI Image", "Generating image", "idle");
+        try {
+          var payload = await requestAiImage(prompt);
+          var source = extractAiImageSource(payload);
+          if (!source) {
+            throw new Error("missing-image-source");
+          }
+          await applyAiImageSource(source);
+          setStatus("AI Image", "Generated background applied", "live");
+        } catch (error) {
+          var message = error && error.message ? error.message : "Check the image endpoint";
+          if (message === "Failed to fetch") {
+            message = "Start the local AI server";
+          }
+          setStatus("AI Image error", message.slice(0, 56), "error");
+        } finally {
+          els.aiImageGenerate.disabled = false;
+        }
+      }
+
+      async function requestAiImage(prompt) {
+        if (typeof window.VJ_AI_IMAGE_GENERATOR === "function") {
+          return window.VJ_AI_IMAGE_GENERATOR(prompt);
+        }
+        var response = await fetch(AI_IMAGE_ENDPOINT, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            prompt: prompt,
+            size: "1024x1024"
+          })
+        });
+        if (!response.ok) {
+          var errorPayload = await response.json().catch(function () {
+            return {};
+          });
+          throw new Error(errorPayload.error || "Image endpoint error");
+        }
+        return response.json();
+      }
+
+      function extractAiImageSource(payload) {
+        if (!payload) {
+          return "";
+        }
+        if (typeof payload === "string") {
+          return normalizeAiImageSource(payload);
+        }
+        if (payload.imageUrl) {
+          return normalizeAiImageSource(payload.imageUrl);
+        }
+        if (payload.url) {
+          return normalizeAiImageSource(payload.url);
+        }
+        if (payload.dataUrl) {
+          return normalizeAiImageSource(payload.dataUrl);
+        }
+        if (payload.b64_json) {
+          return normalizeAiImageSource(payload.b64_json);
+        }
+        if (payload.image) {
+          return normalizeAiImageSource(payload.image);
+        }
+        if (Array.isArray(payload.data) && payload.data.length > 0) {
+          return extractAiImageSource(payload.data[0]);
+        }
+        return "";
+      }
+
+      function normalizeAiImageSource(source) {
+        if (!source) {
+          return "";
+        }
+        if (/^(data:|blob:|https?:)/.test(source)) {
+          return source;
+        }
+        return "data:image/png;base64," + source;
+      }
+
+      function applyAiImageSource(source) {
+        return new Promise(function (resolve, reject) {
+          var loader = new THREE.TextureLoader();
+          loader.setCrossOrigin("anonymous");
+          loader.load(source, function (texture) {
+            texture.minFilter = THREE.LinearFilter;
+            texture.magFilter = THREE.LinearFilter;
+            if ("encoding" in texture) {
+              texture.encoding = THREE.sRGBEncoding;
+            }
+            texture.needsUpdate = true;
+            if (state.generatedImageTexture) {
+              state.generatedImageTexture.dispose();
+            }
+            state.generatedImageTexture = texture;
+            state.scene.background = texture;
+            resolve();
+          }, undefined, reject);
+        });
+      }
+
+      function clearAiImage() {
+        if (state.generatedImageTexture) {
+          state.generatedImageTexture.dispose();
+          state.generatedImageTexture = null;
+        }
+        if (state.scene) {
+          state.scene.background = null;
+        }
+        setStatus("AI Image", "Generated background cleared", "idle");
+      }
+
       function savePreset() {
         localStorage.setItem(CONFIG_KEY, JSON.stringify(config));
         setStatus("Preset saved", "Configuration stored locally", "live");
@@ -2926,6 +4371,11 @@
           syncControlsFromConfig();
           rebuildAllModes();
           syncModes();
+          if (config.autoVjEnabled) {
+            startAutoVj();
+          } else {
+            stopAutoVj();
+          }
           setStatus("Preset loaded", "Configuration restored", "live");
         } catch (error) {
           setStatus("Preset error", "Saved configuration is invalid", "error");
@@ -2953,13 +4403,49 @@
 
       function sanitizeConfig(next) {
         next.particleCount = clamp(Number(next.particleCount) || 0, 0, 10000);
+        next.stardustCount = clamp(Math.round(Number(next.stardustCount) || 3000), 500, 10000);
         next.particleSize = clamp(Number(next.particleSize) || 1, 0.1, 5);
         next.rotationSpeedX = clamp(Number(next.rotationSpeedX) || 0, -1.5, 1.5);
         next.rotationSpeedY = clamp(Number(next.rotationSpeedY) || 0, -1.5, 1.5);
         next.manualRotationX = clamp(Number(next.manualRotationX) || 0, -180, 180);
         next.manualRotationY = clamp(Number(next.manualRotationY) || 0, -180, 180);
+        next.autoVjEnabled = !!next.autoVjEnabled;
+        next.autoVjIntensity = clamp(Number(next.autoVjIntensity) || 0.65, 0, 1);
+        next.autoVjScenePace = clamp(Number(next.autoVjScenePace) || 1, 0.25, 2);
         next.glowStrength = clamp(Number(next.glowStrength) || 0, 0, 3);
         next.sparkPower = clamp(Number(next.sparkPower) || 1.3, 0.4, 2.5);
+        next.colorHue = clamp(Number(next.colorHue) || 0, -180, 180);
+        var colorSaturation = Number(next.colorSaturation);
+        next.colorSaturation = clamp(isFinite(colorSaturation) ? colorSaturation : 1, 0, 2.5);
+        next.kaleidoscopeEnabled = !!next.kaleidoscopeEnabled;
+        next.kaleidoscopeReactive = !!next.kaleidoscopeReactive;
+        if (next.kaleidoscopeReactive) {
+          next.kaleidoscopeEnabled = true;
+        }
+        next.kaleidoscopeSides = clamp(Math.round(Number(next.kaleidoscopeSides) || 6), 3, 16);
+        next.glitchStrength = clamp(Number(next.glitchStrength) || 0, 0, 1.5);
+        next.glitchReactive = !!next.glitchReactive;
+        next.grungeStrength = clamp(Number(next.grungeStrength) || 0, 0, 1.5);
+        next.grungeReactive = !!next.grungeReactive;
+        next.quakeStrength = clamp(Number(next.quakeStrength) || 0, 0, 1.5);
+        next.quakeReactive = !!next.quakeReactive;
+        next.zoomAmount = clamp(Number(next.zoomAmount) || 1, 0.5, 2.5);
+        next.zoomReactive = !!next.zoomReactive;
+        next.mirrorVertical = !!next.mirrorVertical;
+        next.mirrorVerticalReactive = !!next.mirrorVerticalReactive;
+        if (next.mirrorVerticalReactive) {
+          next.mirrorVertical = true;
+        }
+        next.mirrorHorizontal = !!next.mirrorHorizontal;
+        next.mirrorHorizontalReactive = !!next.mirrorHorizontalReactive;
+        if (next.mirrorHorizontalReactive) {
+          next.mirrorHorizontal = true;
+        }
+        next.mirrorVerticalPosition = clamp(Number(next.mirrorVerticalPosition) || 0.5, 0.05, 0.95);
+        next.mirrorHorizontalPosition = clamp(Number(next.mirrorHorizontalPosition) || 0.5, 0.05, 0.95);
+        next.micSensitivity = clamp(Number(next.micSensitivity) || 3.4, 0.5, 8);
+        next.micNoiseGate = clamp(Number(next.micNoiseGate) || 0.03, 0, 0.25);
+        next.aiImagePrompt = String(next.aiImagePrompt || "").slice(0, 320);
         next.videoWidth = clamp(Number(next.videoWidth) || 320, 120, 480);
         next.videoHeight = Math.round(next.videoWidth * 0.75);
         next.autoRotate = !!next.autoRotate;
@@ -2992,6 +4478,11 @@
         var bass = averageFrequency(20, 250);
         var mid = averageFrequency(250, 2000);
         var treble = averageFrequency(2000, 8000);
+        if (state.audioInputKind === "mic") {
+          bass = applyMicNoiseGate(bass);
+          mid = applyMicNoiseGate(mid);
+          treble = applyMicNoiseGate(treble);
+        }
         var overall = (bass * 1.1 + mid + treble * 0.9) / 3;
 
         state.levels.bass = lerp(state.levels.bass, bass, 0.16);
@@ -3014,8 +4505,16 @@
         for (var i = start; i <= end; i += 1) {
           sum += state.frequencyData[i];
         }
-        var inputBoost = state.audioInputKind === "mic" ? 3.4 : 1;
+        var inputBoost = state.audioInputKind === "mic" ? config.micSensitivity : 1;
         return clamp(sum / ((end - start + 1) * 255) * inputBoost, 0, 1);
+      }
+
+      function applyMicNoiseGate(value) {
+        var gate = clamp(config.micNoiseGate, 0, 0.95);
+        if (value <= gate) {
+          return 0;
+        }
+        return clamp((value - gate) / (1 - gate), 0, 1);
       }
 
       function sampleFrequency(normalized) {
@@ -3028,10 +4527,66 @@
 
       function renderWithGlow(time) {
         var post = state.post;
-        if (!post || config.glowStrength <= 0) {
+        var hasColorTuning = Math.abs(config.colorHue) > 0.001 || Math.abs(config.colorSaturation - 1) > 0.001;
+        var hasEffects = config.kaleidoscopeEnabled ||
+          config.glitchStrength > 0.001 ||
+          config.glitchReactive ||
+          config.grungeStrength > 0.001 ||
+          config.grungeReactive ||
+          config.quakeStrength > 0.001 ||
+          config.quakeReactive ||
+          Math.abs(config.zoomAmount - 1) > 0.001 ||
+          config.zoomReactive ||
+          config.mirrorVertical ||
+          config.mirrorVerticalReactive ||
+          config.mirrorHorizontal ||
+          config.mirrorHorizontalReactive ||
+          state.autoVjBoosts.glitch > 0.001 ||
+          state.autoVjBoosts.grunge > 0.001 ||
+          state.autoVjBoosts.quake > 0.001 ||
+          state.autoVjBoosts.zoom > 0.001;
+        if (!post || (config.glowStrength <= 0 && !hasColorTuning && !hasEffects)) {
           state.renderer.setRenderTarget(null);
           state.renderer.render(state.scene, state.camera);
           return;
+        }
+
+        var bass = state.levels.bass;
+        var mid = state.levels.mid;
+        var treble = state.levels.treble;
+        var overall = state.levels.overall;
+        var kaleidoscopeSides = config.kaleidoscopeSides;
+        var glitchStrength = config.glitchStrength;
+        var grungeStrength = config.grungeStrength;
+        var quakeStrength = config.quakeStrength;
+        var zoomAmount = config.zoomAmount;
+        var mirrorVerticalPosition = config.mirrorVerticalPosition;
+        var mirrorHorizontalPosition = config.mirrorHorizontalPosition;
+
+        if (config.kaleidoscopeReactive) {
+          kaleidoscopeSides = clamp(config.kaleidoscopeSides + Math.round(treble * 7 + bass * 3), 3, 16);
+        }
+        if (config.glitchReactive) {
+          glitchStrength = clamp(config.glitchStrength + treble * 1.05 + overall * 0.28, 0, 1.5);
+        }
+        glitchStrength = clamp(glitchStrength + state.controllerBoosts.glitch + state.autoVjBoosts.glitch, 0, 1.5);
+        if (config.grungeReactive) {
+          grungeStrength = clamp(config.grungeStrength + overall * 0.72 + treble * 0.18, 0, 1.5);
+        }
+        grungeStrength = clamp(grungeStrength + state.controllerBoosts.grunge + state.autoVjBoosts.grunge, 0, 1.5);
+        if (config.quakeReactive) {
+          quakeStrength = clamp(config.quakeStrength + bass * 1.25 + mid * 0.16, 0, 1.5);
+        }
+        quakeStrength = clamp(quakeStrength + state.controllerBoosts.quake + state.autoVjBoosts.quake, 0, 1.5);
+        if (config.zoomReactive) {
+          zoomAmount = clamp(config.zoomAmount + bass * 0.46 + overall * 0.14, 0.5, 2.5);
+        }
+        zoomAmount = clamp(zoomAmount + state.controllerBoosts.zoom + state.autoVjBoosts.zoom, 0.5, 2.5);
+        if (config.mirrorVerticalReactive) {
+          mirrorVerticalPosition = clamp(config.mirrorVerticalPosition + Math.sin(time * 3.4) * (mid * 0.2 + bass * 0.07), 0.05, 0.95);
+        }
+        if (config.mirrorHorizontalReactive) {
+          mirrorHorizontalPosition = clamp(config.mirrorHorizontalPosition + Math.cos(time * 3.9) * (treble * 0.18 + mid * 0.08), 0.05, 0.95);
         }
 
         state.renderer.setRenderTarget(post.sceneTarget);
@@ -3064,7 +4619,17 @@
         post.finalMaterial.uniforms.tScene.value = post.sceneTarget.texture;
         post.finalMaterial.uniforms.tBloom.value = source.texture;
         post.finalMaterial.uniforms.strength.value = config.glowStrength * (0.72 + state.levels.overall * 0.72);
-        post.finalMaterial.uniforms.saturation.value = 1.12 + state.levels.treble * 0.28;
+        post.finalMaterial.uniforms.hueShift.value = THREE.MathUtils.degToRad(config.colorHue);
+        post.finalMaterial.uniforms.saturation.value = config.colorSaturation * (1.12 + treble * 0.28);
+        post.finalMaterial.uniforms.kaleidoscopeSides.value = config.kaleidoscopeEnabled ? kaleidoscopeSides : 0;
+        post.finalMaterial.uniforms.glitchStrength.value = glitchStrength;
+        post.finalMaterial.uniforms.grungeStrength.value = grungeStrength;
+        post.finalMaterial.uniforms.quakeStrength.value = quakeStrength;
+        post.finalMaterial.uniforms.zoomAmount.value = zoomAmount;
+        post.finalMaterial.uniforms.mirrorVertical.value = config.mirrorVertical ? 1 : 0;
+        post.finalMaterial.uniforms.mirrorHorizontal.value = config.mirrorHorizontal ? 1 : 0;
+        post.finalMaterial.uniforms.mirrorVerticalPosition.value = mirrorVerticalPosition;
+        post.finalMaterial.uniforms.mirrorHorizontalPosition.value = mirrorHorizontalPosition;
         post.finalMaterial.uniforms.time.value = time;
         state.renderer.setRenderTarget(null);
         state.renderer.clear();
@@ -3092,6 +4657,9 @@
         var time = state.clock.elapsedTime;
 
         updateAudio();
+        updateBpmDetector(delta, time);
+        updateControllers(delta);
+        updateAutoVj(delta, time);
         updateMeters();
         updateRootRotation(delta);
         if (state.atmosphere) {
@@ -3126,6 +4694,121 @@
           state.root.rotation.x = lerp(state.root.rotation.x, state.targetRotation.x, 0.16);
           state.root.rotation.y = lerp(state.root.rotation.y, state.targetRotation.y, 0.16);
         }
+      }
+
+      function updateControllers(delta) {
+        updateGamepad(delta);
+      }
+
+      function updateGamepad(delta) {
+        state.controllerBoosts.glitch = lerp(state.controllerBoosts.glitch, 0, 0.18);
+        state.controllerBoosts.grunge = lerp(state.controllerBoosts.grunge, 0, 0.18);
+        state.controllerBoosts.quake = lerp(state.controllerBoosts.quake, 0, 0.18);
+        state.controllerBoosts.zoom = lerp(state.controllerBoosts.zoom, 0, 0.18);
+        state.controllerBoosts.stardust = lerp(state.controllerBoosts.stardust, 0, 0.18);
+        if (state.gamepadIndex === null || !navigator.getGamepads) {
+          return;
+        }
+        var gamepad = navigator.getGamepads()[state.gamepadIndex];
+        if (!gamepad) {
+          return;
+        }
+
+        var leftX = applyDeadzone(gamepad.axes[0] || 0, 0.12);
+        var leftY = applyDeadzone(gamepad.axes[1] || 0, 0.12);
+        var rightX = applyDeadzone(gamepad.axes[2] || 0, 0.12);
+        var rightY = applyDeadzone(gamepad.axes[3] || 0, 0.12);
+
+        if (leftX || leftY) {
+          if (config.autoRotate) {
+            config.autoRotate = false;
+            els.autoRotate.checked = false;
+            updateRotationControls();
+          }
+          state.targetRotation.y += leftX * delta * 2.6;
+          state.targetRotation.x = clamp(state.targetRotation.x + leftY * delta * 1.8, -Math.PI * 0.78, Math.PI * 0.78);
+        }
+
+        if (rightX) {
+          var hue = config.colorHue + rightX * delta * 150;
+          if (hue > 180) {
+            hue -= 360;
+          }
+          if (hue < -180) {
+            hue += 360;
+          }
+          setRangeControl(els.colorHue, els.colorHueValue, "colorHue", hue, 0, function (value) {
+            return String(Math.round(value));
+          });
+        }
+
+        if (rightY) {
+          setRangeControl(els.zoomAmount, els.zoomAmountValue, "zoomAmount", clamp(config.zoomAmount - rightY * delta * 1.45, 0.5, 2.5), 2, function (value) {
+            return value.toFixed(2);
+          });
+        }
+
+        var l2 = gamepad.buttons[6] ? gamepad.buttons[6].value : 0;
+        var r2 = gamepad.buttons[7] ? gamepad.buttons[7].value : 0;
+        var l1 = gamepad.buttons[4] && gamepad.buttons[4].pressed ? 1 : 0;
+        var r1 = gamepad.buttons[5] && gamepad.buttons[5].pressed ? 1 : 0;
+        state.controllerBoosts.glitch = Math.max(state.controllerBoosts.glitch, l2 * 0.9);
+        state.controllerBoosts.zoom = Math.max(state.controllerBoosts.zoom, r2 * 0.55);
+        state.controllerBoosts.stardust = Math.max(state.controllerBoosts.stardust, r2 * 0.85);
+        state.controllerBoosts.grunge = Math.max(state.controllerBoosts.grunge, l1 * 0.55);
+        state.controllerBoosts.quake = Math.max(state.controllerBoosts.quake, r1 * 0.9);
+
+        handleGamepadButton(gamepad, 0, function () {
+          toggleMode("stardust");
+        });
+        handleGamepadButton(gamepad, 1, function () {
+          toggleMode("crown");
+        });
+        handleGamepadButton(gamepad, 2, function () {
+          setToggleControl(els.glitchReactive, "glitchReactive", !config.glitchReactive);
+        });
+        handleGamepadButton(gamepad, 3, function () {
+          setToggleControl(els.kaleidoscopeEnabled, "kaleidoscopeEnabled", !config.kaleidoscopeEnabled);
+        });
+        handleGamepadButton(gamepad, 12, function () {
+          setRangeControl(els.stardustCount, els.stardustCountValue, "stardustCount", clamp(config.stardustCount + 500, 500, 10000), 0, function (value) {
+            return String(Math.round(value));
+          }, scheduleStardustRebuild);
+        });
+        handleGamepadButton(gamepad, 13, function () {
+          setRangeControl(els.stardustCount, els.stardustCountValue, "stardustCount", clamp(config.stardustCount - 500, 500, 10000), 0, function (value) {
+            return String(Math.round(value));
+          }, scheduleStardustRebuild);
+        });
+        handleGamepadButton(gamepad, 14, function () {
+          setRangeControl(els.particleSize, els.particleSizeValue, "particleSize", clamp(config.particleSize - 0.2, 0.1, 5), 1, function (value) {
+            return value.toFixed(1);
+          }, updatePointSizes);
+        });
+        handleGamepadButton(gamepad, 15, function () {
+          setRangeControl(els.particleSize, els.particleSizeValue, "particleSize", clamp(config.particleSize + 0.2, 0.1, 5), 1, function (value) {
+            return value.toFixed(1);
+          }, updatePointSizes);
+        });
+
+        state.gamepadPreviousButtons = gamepad.buttons.map(function (button) {
+          return !!button.pressed;
+        });
+      }
+
+      function handleGamepadButton(gamepad, index, callback) {
+        var button = gamepad.buttons[index];
+        var pressed = !!(button && button.pressed);
+        if (pressed && !state.gamepadPreviousButtons[index]) {
+          callback();
+        }
+      }
+
+      function applyDeadzone(value, zone) {
+        if (Math.abs(value) < zone) {
+          return 0;
+        }
+        return (value - Math.sign(value) * zone) / (1 - zone);
       }
 
       function updateMeters() {
