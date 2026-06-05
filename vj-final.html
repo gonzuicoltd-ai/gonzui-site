@@ -335,6 +335,68 @@
       background: rgba(53, 230, 212, 0.09);
     }
 
+    .band-matrix {
+      display: grid;
+      gap: 6px;
+    }
+
+    .band-row {
+      min-height: 30px;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) repeat(3, 34px);
+      align-items: center;
+      gap: 6px;
+    }
+
+    .band-row--header {
+      min-height: 20px;
+      color: var(--muted);
+      font-size: 10px;
+      font-weight: 800;
+      text-transform: uppercase;
+    }
+
+    .band-row--header span {
+      text-align: center;
+    }
+
+    .band-row--header .band-name {
+      color: var(--muted);
+      font-size: 10px;
+    }
+
+    .band-name {
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      color: #e5e9ef;
+      font-size: 12px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .band-check {
+      min-height: 30px;
+      display: grid;
+      place-items: center;
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      background: rgba(255, 255, 255, 0.045);
+      cursor: pointer;
+    }
+
+    .band-check input {
+      width: 15px;
+      height: 15px;
+      accent-color: var(--cyan);
+      cursor: pointer;
+    }
+
+    .band-check:has(input:checked) {
+      border-color: rgba(53, 230, 212, 0.42);
+      background: rgba(53, 230, 212, 0.09);
+    }
+
     .range-stack {
       display: grid;
       gap: 12px;
@@ -510,6 +572,11 @@
     .status-strip strong {
       color: var(--text);
       font-weight: 800;
+    }
+
+    .brand-mark,
+    .status-strip {
+      display: none;
     }
 
     .status-chip {
@@ -697,6 +764,11 @@
       </section>
 
       <section class="control-section">
+        <h2>Mode Bands</h2>
+        <div class="band-matrix" id="modeBandGrid"></div>
+      </section>
+
+      <section class="control-section">
         <h2>Animation</h2>
         <div class="switch-row">
           <span class="switch-label">Auto Rotation</span>
@@ -743,8 +815,8 @@
           </div>
           <div class="range-control">
             <label for="glowStrength">Glow Strength</label>
-            <output id="glowStrengthValue">1.35</output>
-            <input id="glowStrength" type="range" min="0" max="3" step="0.05" value="1.35">
+            <output id="glowStrengthValue">0.30</output>
+            <input id="glowStrength" type="range" min="0" max="0.3" step="0.01" value="0.3">
           </div>
           <div class="range-control">
             <label for="sparkPower">Spark Power</label>
@@ -892,6 +964,7 @@
 
       var CONFIG_KEY = "vj-cymatics-3d-config-v1";
       var AI_IMAGE_ENDPOINT = "/api/generate-image";
+      var GLOW_STRENGTH_MAX = 0.3;
       var MODE_IDS = [
         "particles",
         "stardust",
@@ -902,10 +975,124 @@
         "torusKnot",
         "icosahedron",
         "octahedron",
+        "dodecahedron",
+        "sphereMesh",
         "triangle",
         "crown",
+        "nebula",
+        "blackHole",
+        "crystalCave",
+        "laserGrid",
+        "dnaHelix",
+        "plasmaBall",
+        "audioTunnel",
+        "fractalTree",
+        "infiniteFractal",
+        "rainMatrix",
+        "liquidMetal",
+        "wireMountain",
+        "solarFlare",
+        "orbitSystem",
+        "cymaticPlate",
+        "shardBurst",
+        "ribbonFlow",
+        "cathedralLines",
+        "vortexRings",
+        "particleFountain",
+        "electricWeb",
+        "pulseRings",
+        "knotCloud",
+        "cometField",
+        "mirrorCity",
+        "dataStorm",
+        "flowerMandala",
+        "starGate",
         "video"
       ];
+      var MODE_LABELS = {
+        particles: "Particles",
+        stardust: "Stardust",
+        wave: "Wave",
+        spiral: "Spiral",
+        emitter: "Emitter",
+        torus: "Torus",
+        torusKnot: "TorusKnot",
+        icosahedron: "Icosahedron",
+        octahedron: "Octahedron",
+        dodecahedron: "Dodecahedron",
+        sphereMesh: "Sphere Mesh",
+        triangle: "Triangle",
+        crown: "Crown",
+        nebula: "Nebula",
+        blackHole: "Black Hole",
+        crystalCave: "Crystal Cave",
+        laserGrid: "Laser Grid",
+        dnaHelix: "DNA Helix",
+        plasmaBall: "Plasma Ball",
+        audioTunnel: "Audio Tunnel",
+        fractalTree: "Fractal Tree",
+        infiniteFractal: "Infinite Fractal",
+        rainMatrix: "Rain Matrix",
+        liquidMetal: "Liquid Metal",
+        wireMountain: "Wire Mountain",
+        solarFlare: "Solar Flare",
+        orbitSystem: "Orbit System",
+        cymaticPlate: "Cymatic Plate",
+        shardBurst: "Shard Burst",
+        ribbonFlow: "Ribbon Flow",
+        cathedralLines: "Cathedral Lines",
+        vortexRings: "Vortex Echo",
+        particleFountain: "Particle Fountain",
+        electricWeb: "Electric Web",
+        pulseRings: "Pulse Rings",
+        knotCloud: "Knot Cloud",
+        cometField: "Comet Field",
+        mirrorCity: "Mirror City",
+        dataStorm: "Data Storm",
+        flowerMandala: "Flower Mandala",
+        starGate: "Star Gate",
+        video: "Video"
+      };
+      var BAND_IDS = ["low", "mid", "high"];
+      var BAND_LABELS = {
+        low: "L",
+        mid: "M",
+        high: "H"
+      };
+      var BAND_TITLES = {
+        low: "Low",
+        mid: "Mid",
+        high: "High"
+      };
+      var VARIANT_MODE_DEFS = {
+        nebula: { hue: 0.64, saturation: 0.72, min: 700, max: 1500, density: 0.82, scale: 1, glow: 0x8edcff, flare: 0x8edcff },
+        blackHole: { hue: 0.78, saturation: 0.64, min: 680, max: 1400, density: 0.75, scale: 1, glow: 0x9f7cff, flare: 0x12151f },
+        crystalCave: { hue: 0.52, saturation: 0.54, min: 720, max: 1600, density: 0.8, scale: 1, glow: 0xdff7ff },
+        laserGrid: { hue: 0.47, saturation: 0.9, min: 720, max: 1400, density: 0.72, scale: 1, glow: 0x35e6d4, line: true },
+        dnaHelix: { hue: 0.9, saturation: 0.76, min: 620, max: 1300, density: 0.68, scale: 1, glow: 0xff6fb5, line: true },
+        plasmaBall: { hue: 0.58, saturation: 0.86, min: 720, max: 1500, density: 0.82, scale: 1, glow: 0x74c7ff, flare: 0x74c7ff, line: true },
+        audioTunnel: { hue: 0.12, saturation: 0.82, min: 760, max: 1600, density: 0.82, scale: 1, glow: 0xffd36a, attachToScene: true },
+        fractalTree: { hue: 0.33, saturation: 0.68, min: 520, max: 1100, density: 0.58, scale: 1, glow: 0x9bff78, line: true },
+        rainMatrix: { hue: 0.43, saturation: 0.82, min: 900, max: 1800, density: 0.9, scale: 1, glow: 0x73ffd7, attachToScene: true },
+        liquidMetal: { hue: 0.56, saturation: 0.44, min: 760, max: 1500, density: 0.8, scale: 1, glow: 0xc9f4ff, flare: 0xc9f4ff },
+        wireMountain: { hue: 0.18, saturation: 0.78, min: 780, max: 1600, density: 0.82, scale: 1, glow: 0xd8ff7d, line: true },
+        solarFlare: { hue: 0.08, saturation: 0.94, min: 780, max: 1600, density: 0.82, scale: 1, glow: 0xffbe55, flare: 0xffbe55 },
+        orbitSystem: { hue: 0.6, saturation: 0.66, min: 620, max: 1300, density: 0.68, scale: 1, glow: 0x9ed8ff, line: true },
+        cymaticPlate: { hue: 0.5, saturation: 0.78, min: 900, max: 1800, density: 0.9, scale: 1, glow: 0x35e6d4, line: true },
+        shardBurst: { hue: 0.02, saturation: 0.88, min: 760, max: 1500, density: 0.78, scale: 1, glow: 0xff7d72 },
+        ribbonFlow: { hue: 0.82, saturation: 0.82, min: 720, max: 1500, density: 0.78, scale: 1, glow: 0xe58cff, line: true },
+        cathedralLines: { hue: 0.55, saturation: 0.5, min: 720, max: 1500, density: 0.78, scale: 1, glow: 0xdff7ff, line: true },
+        vortexRings: { hue: 0.66, saturation: 0.82, min: 860, max: 1800, density: 0.9, scale: 1, glow: 0xaec8ff, line: true },
+        particleFountain: { hue: 0.48, saturation: 0.84, min: 820, max: 1700, density: 0.88, scale: 1, glow: 0x75ffe6 },
+        electricWeb: { hue: 0.57, saturation: 0.92, min: 760, max: 1500, density: 0.78, scale: 1, glow: 0x82d7ff, line: true },
+        pulseRings: { hue: 0.09, saturation: 0.84, min: 760, max: 1500, density: 0.8, scale: 1, glow: 0xffc86e, line: true },
+        knotCloud: { hue: 0.93, saturation: 0.82, min: 760, max: 1600, density: 0.82, scale: 1, glow: 0xff7fcb },
+        cometField: { hue: 0.55, saturation: 0.72, min: 760, max: 1500, density: 0.78, scale: 1, glow: 0xcff6ff, attachToScene: true, line: true },
+        mirrorCity: { hue: 0.13, saturation: 0.72, min: 720, max: 1500, density: 0.75, scale: 1, glow: 0xffdf8a, line: true },
+        dataStorm: { hue: 0.42, saturation: 0.88, min: 860, max: 1800, density: 0.9, scale: 1, glow: 0x6fffe2, attachToScene: true, line: true },
+        flowerMandala: { hue: 0.88, saturation: 0.82, min: 820, max: 1700, density: 0.86, scale: 1, glow: 0xff8fd8, line: true },
+        starGate: { hue: 0.58, saturation: 0.78, min: 840, max: 1800, density: 0.9, scale: 1, glow: 0x7ad7ff, attachToScene: true, line: true }
+      };
 
       var config = {
         particleCount: 1200,
@@ -919,7 +1106,7 @@
         autoVjEnabled: false,
         autoVjIntensity: 0.65,
         autoVjScenePace: 1,
-        glowStrength: 1.35,
+        glowStrength: GLOW_STRENGTH_MAX,
         sparkPower: 1.3,
         colorHue: 0,
         colorSaturation: 1,
@@ -945,6 +1132,7 @@
         aiImagePrompt: "",
         videoWidth: 320,
         videoHeight: 240,
+        modeBands: createDefaultModeBands(),
         enabledModes: ["particles", "wave", "spiral", "emitter", "torus"]
       };
 
@@ -953,6 +1141,129 @@
         "void main() {",
         "  vUv = uv;",
         "  gl_Position = vec4(position.xy, 0.0, 1.0);",
+        "}"
+      ].join("\n");
+
+      var FRACTAL_VERTEX_SHADER = [
+        "varying vec2 vUv;",
+        "void main() {",
+        "  vUv = uv;",
+        "  gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);",
+        "}"
+      ].join("\n");
+
+      var INFINITE_FRACTAL_FRAGMENT_SHADER = [
+        "precision highp float;",
+        "uniform vec2 resolution;",
+        "uniform float time;",
+        "uniform float bass;",
+        "uniform float mid;",
+        "uniform float treble;",
+        "uniform float overall;",
+        "uniform float hueShift;",
+        "varying vec2 vUv;",
+        "mat2 rotate2d(float a) {",
+        "  float s = sin(a);",
+        "  float c = cos(a);",
+        "  return mat2(c, -s, s, c);",
+        "}",
+        "float hash(vec2 p) {",
+        "  return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453123);",
+        "}",
+        "float stroke(float d, float w) {",
+        "  return 1.0 - smoothstep(w, w + 0.012, abs(d));",
+        "}",
+        "float fillShape(float d) {",
+        "  return 1.0 - smoothstep(0.0, 0.018, d);",
+        "}",
+        "float sdBox(vec2 p, vec2 b) {",
+        "  vec2 d = abs(p) - b;",
+        "  return length(max(d, 0.0)) + min(max(d.x, d.y), 0.0);",
+        "}",
+        "float sdCircle(vec2 p, float r) {",
+        "  return length(p) - r;",
+        "}",
+        "float dome(vec2 p, float r, float w) {",
+        "  float arc = stroke(sdCircle(p, r), w) * smoothstep(-0.06, 0.12, p.y);",
+        "  float base = stroke(sdBox(p - vec2(0.0, -r * 0.42), vec2(r * 0.92, w * 1.8)), w);",
+        "  return max(arc, base);",
+        "}",
+        "float perforations(vec2 p, float density) {",
+        "  vec2 grid = fract(p * density) - 0.5;",
+        "  float dotHole = 1.0 - smoothstep(0.055, 0.085, length(grid));",
+        "  return dotHole;",
+        "}",
+        "float ornament(vec2 p, float layer) {",
+        "  p.x = abs(p.x);",
+        "  float arches = dome(p - vec2(0.0, -0.09), 0.34, 0.014 + treble * 0.008);",
+        "  arches = max(arches, dome(p - vec2(0.42, -0.03), 0.22, 0.012));",
+        "  arches = max(arches, dome(p - vec2(0.21, -0.18), 0.15, 0.01));",
+        "  float rings = stroke(sdCircle(p - vec2(0.0, 0.10), 0.20 + bass * 0.035), 0.014);",
+        "  rings += stroke(sdCircle(p - vec2(0.42, 0.02), 0.13 + mid * 0.025), 0.012);",
+        "  rings += stroke(sdCircle(p - vec2(0.22, -0.13), 0.09 + treble * 0.02), 0.009);",
+        "  float blocks = stroke(sdBox(p - vec2(0.0, -0.34), vec2(0.52, 0.12)), 0.012);",
+        "  blocks += stroke(sdBox(p - vec2(0.36, -0.28), vec2(0.13, 0.22)), 0.01);",
+        "  float filigree = 0.0;",
+        "  vec2 q = p;",
+        "  for (int i = 0; i < 5; i += 1) {",
+        "    float fi = float(i);",
+        "    q = abs(q) * (1.26 + mid * 0.12) - vec2(0.22 + layer * 0.015, 0.15 + bass * 0.025);",
+        "    q *= rotate2d(0.68 + fi * 0.17 + treble * 0.16);",
+        "    filigree += stroke(sdCircle(q, 0.16 / (fi + 1.2)), 0.006 + treble * 0.004) * (0.75 / (fi + 1.0));",
+        "    filigree += stroke(sdBox(q, vec2(0.12, 0.025) / (fi + 1.0)), 0.005) * (0.55 / (fi + 1.0));",
+        "  }",
+        "  float holes = perforations(p + vec2(layer * 0.13, 0.0), 16.0 + layer * 3.0) * fillShape(sdBox(p - vec2(0.0, -0.34), vec2(0.56, 0.18)));",
+        "  return arches * 1.2 + rings * 1.35 + blocks * 0.9 + filigree * 1.15 - holes * 0.42;",
+        "}",
+        "void main() {",
+        "  vec2 uv = vUv - 0.5;",
+        "  uv.x *= resolution.x / max(resolution.y, 1.0);",
+        "  uv.y += 0.08;",
+        "  float zoom = 1.18 + bass * 0.22 + sin(time * 0.12) * 0.03;",
+        "  vec2 p = uv * zoom;",
+        "  p.x = abs(p.x);",
+        "  vec3 color = vec3(0.055, 0.052, 0.042);",
+        "  float relief = 0.0;",
+        "  float shadow = 0.0;",
+        "  float scroll = time * (0.025 + bass * 0.12 + overall * 0.05);",
+        "  for (int i = 0; i < 8; i += 1) {",
+        "    float fi = float(i);",
+        "    float depth = fi / 7.0;",
+        "    float scale = 1.0 + depth * 1.45;",
+        "    vec2 cell = vec2(1.12 - depth * 0.06, 0.72 - depth * 0.025);",
+        "    vec2 q = p * scale;",
+        "    q.y += scroll * (1.0 + depth * 3.0) + depth * 0.42;",
+        "    q.x += sin(q.y * 0.8 + time * 0.08) * depth * 0.12;",
+        "    vec2 id = floor(q / cell);",
+        "    vec2 r = mod(q + cell * 0.5, cell) - cell * 0.5;",
+        "    r.x = abs(r.x);",
+        "    float pat = ornament(r, fi);",
+        "    float balcony = stroke(abs(r.y + 0.29) - 0.015, 0.012) * (1.0 - smoothstep(0.02, 0.54, abs(r.x)));",
+        "    float column = stroke(abs(r.x - 0.46), 0.012) * (1.0 - smoothstep(-0.34, 0.35, r.y));",
+        "    float domeTop = fillShape(sdCircle(r - vec2(0.0, 0.19), 0.105 + bass * 0.02));",
+        "    float layerMask = clamp(pat + balcony * 0.85 + column * 0.65 + domeTop * 0.35, 0.0, 1.55);",
+        "    float light = (0.24 + depth * 0.58) * layerMask;",
+        "    float idNoise = hash(id + fi);",
+        "    vec3 stone = mix(vec3(0.42, 0.35, 0.25), vec3(0.86, 0.78, 0.62), depth);",
+        "    stone = mix(stone, vec3(0.58, 0.70, 0.62), 0.18 + treble * 0.12 + idNoise * 0.08);",
+        "    color += stone * light * (0.62 + mid * 0.28);",
+        "    relief += layerMask * (0.12 + depth * 0.16);",
+        "    shadow += (1.0 - smoothstep(0.0, 0.65, r.y + 0.34)) * layerMask * (0.09 + depth * 0.08);",
+        "  }",
+        "  float centerColumn = 1.0 - smoothstep(0.015, 0.04, abs(uv.x));",
+        "  float pendant = 0.0;",
+        "  vec2 sp = vec2(uv.x * 2.1, fract((uv.y + scroll * 0.55) * 3.1) - 0.5);",
+        "  pendant += stroke(sdCircle(sp - vec2(0.0, 0.18), 0.11 + bass * 0.025), 0.012);",
+        "  pendant += stroke(sdCircle(sp - vec2(0.0, -0.04), 0.065 + mid * 0.02), 0.01);",
+        "  pendant += stroke(abs(sp.x), 0.008) * (1.0 - smoothstep(0.0, 0.5, abs(sp.y)));",
+        "  color += vec3(0.82, 0.72, 0.54) * pendant * centerColumn * (0.8 + treble * 0.45);",
+        "  float vignette = 1.0 - smoothstep(0.18, 1.15, length(uv * vec2(0.78, 1.12)));",
+        "  color *= 0.74 + relief * 0.62;",
+        "  color -= shadow * vec3(0.22, 0.18, 0.13);",
+        "  color += vec3(0.12, 0.18, 0.16) * (1.0 - vignette) * 0.18;",
+        "  color = max(color, vec3(0.0));",
+        "  color *= vignette * (0.86 + overall * 0.28);",
+        "  gl_FragColor = vec4(color, 0.96);",
         "}"
       ].join("\n");
 
@@ -1114,6 +1425,8 @@
         aiImagePrompt: document.getElementById("aiImagePrompt"),
         aiImageGenerate: document.getElementById("aiImageGenerate"),
         aiImageClear: document.getElementById("aiImageClear"),
+        modeGrid: document.getElementById("modeGrid"),
+        modeBandGrid: document.getElementById("modeBandGrid"),
         statusChip: document.getElementById("statusChip"),
         statusTitle: document.getElementById("statusTitle"),
         statusText: document.getElementById("statusText"),
@@ -1245,7 +1558,6 @@
         autoVjBoosts: {
           glitch: 0,
           grunge: 0,
-          quake: 0,
           zoom: 0,
           stardust: 0
         },
@@ -1306,6 +1618,8 @@
 
         state.clock = new THREE.Clock();
 
+        createModeControls();
+        createModeBandControls();
         bindControls();
         syncControlsFromConfig();
         if (config.autoVjEnabled) {
@@ -1507,6 +1821,151 @@
         state.scene.add(stars);
       }
 
+      function createModeControls() {
+        if (!els.modeGrid) {
+          return;
+        }
+
+        els.modeGrid.innerHTML = "";
+        MODE_IDS.forEach(function (id) {
+          var label = document.createElement("label");
+          label.className = "check-tile";
+
+          var input = document.createElement("input");
+          input.type = "checkbox";
+          input.setAttribute("data-mode", id);
+          input.checked = config.enabledModes.indexOf(id) !== -1;
+
+          var text = document.createElement("span");
+          text.textContent = MODE_LABELS[id] || id;
+
+          label.appendChild(input);
+          label.appendChild(text);
+          els.modeGrid.appendChild(label);
+        });
+      }
+
+      function createModeBandControls() {
+        if (!els.modeBandGrid) {
+          return;
+        }
+
+        els.modeBandGrid.innerHTML = "";
+
+        var header = document.createElement("div");
+        header.className = "band-row band-row--header";
+        var modeHeader = document.createElement("span");
+        modeHeader.className = "band-name";
+        modeHeader.textContent = "Mode";
+        header.appendChild(modeHeader);
+        BAND_IDS.forEach(function (band) {
+          var label = document.createElement("span");
+          label.textContent = BAND_LABELS[band];
+          label.title = BAND_TITLES[band];
+          header.appendChild(label);
+        });
+        els.modeBandGrid.appendChild(header);
+
+        MODE_IDS.forEach(function (id) {
+          var row = document.createElement("div");
+          row.className = "band-row";
+
+          var name = document.createElement("span");
+          name.className = "band-name";
+          name.textContent = MODE_LABELS[id] || id;
+          row.appendChild(name);
+
+          BAND_IDS.forEach(function (band) {
+            var label = document.createElement("label");
+            var title = (MODE_LABELS[id] || id) + " " + BAND_TITLES[band];
+            label.className = "band-check";
+            label.title = title;
+
+            var input = document.createElement("input");
+            input.type = "checkbox";
+            input.setAttribute("data-mode-band", id);
+            input.setAttribute("data-band", band);
+            input.setAttribute("aria-label", title);
+            input.checked = isModeBandEnabled(id, band);
+
+            label.appendChild(input);
+            row.appendChild(label);
+          });
+
+          els.modeBandGrid.appendChild(row);
+        });
+      }
+
+      function createDefaultModeBands() {
+        var bands = {};
+        MODE_IDS.forEach(function (id) {
+          bands[id] = {
+            low: true,
+            mid: true,
+            high: true
+          };
+        });
+        return bands;
+      }
+
+      function normalizeModeBands(value) {
+        var normalized = createDefaultModeBands();
+        if (!value || typeof value !== "object") {
+          return normalized;
+        }
+
+        MODE_IDS.forEach(function (id) {
+          var current = value[id] || {};
+          BAND_IDS.forEach(function (band) {
+            normalized[id][band] = current[band] !== false;
+          });
+        });
+        return normalized;
+      }
+
+      function ensureModeBandConfig(id) {
+        if (!config.modeBands || typeof config.modeBands !== "object") {
+          config.modeBands = createDefaultModeBands();
+        }
+        if (!config.modeBands[id]) {
+          config.modeBands[id] = {
+            low: true,
+            mid: true,
+            high: true
+          };
+        }
+        BAND_IDS.forEach(function (band) {
+          if (typeof config.modeBands[id][band] !== "boolean") {
+            config.modeBands[id][band] = true;
+          }
+        });
+      }
+
+      function isModeBandEnabled(id, band) {
+        if (!config.modeBands || !config.modeBands[id]) {
+          return true;
+        }
+        return config.modeBands[id][band] !== false;
+      }
+
+      function getModeAudioLevels(id, source) {
+        var levels = source || state.levels;
+        var bassEnabled = isModeBandEnabled(id, "low");
+        var midEnabled = isModeBandEnabled(id, "mid");
+        var trebleEnabled = isModeBandEnabled(id, "high");
+        var bass = bassEnabled ? levels.bass : 0;
+        var mid = midEnabled ? levels.mid : 0;
+        var treble = trebleEnabled ? levels.treble : 0;
+        var active = (bassEnabled ? 1 : 0) + (midEnabled ? 1 : 0) + (trebleEnabled ? 1 : 0);
+
+        return {
+          bass: bass,
+          mid: mid,
+          treble: treble,
+          overall: active > 0 ? (bass + mid + treble) / active : 0
+        };
+      }
+
       function bindControls() {
         els.minimize.addEventListener("click", function () {
           els.panel.classList.toggle("is-minimized");
@@ -1532,6 +1991,15 @@
               });
             }
             syncModes();
+          });
+        });
+
+        document.querySelectorAll("[data-mode-band]").forEach(function (checkbox) {
+          checkbox.addEventListener("change", function () {
+            var modeId = checkbox.getAttribute("data-mode-band");
+            var band = checkbox.getAttribute("data-band");
+            ensureModeBandConfig(modeId);
+            config.modeBands[modeId][band] = checkbox.checked;
           });
         });
 
@@ -1956,7 +2424,7 @@
             return value.toFixed(1);
           }, updatePointSizes);
         } else if (target === "glowStrength") {
-          setRangeControl(els.glowStrength, els.glowStrengthValue, "glowStrength", normalized * 3, 2, function (value) {
+          setRangeControl(els.glowStrength, els.glowStrengthValue, "glowStrength", normalized * GLOW_STRENGTH_MAX, 2, function (value) {
             return value.toFixed(2);
           });
         } else if (target === "colorHue") {
@@ -2092,7 +2560,7 @@
 
         var hueSpeed = (5 + treble * 62 + overall * 24) * intensity;
         updateAutoHue(delta * hueSpeed);
-        setRangeControl(els.glowStrength, els.glowStrengthValue, "glowStrength", clamp(0.55 + overall * 1.95 * intensity + auto.beatPulse * 0.42, 0, 3), 2, function (value) {
+        setRangeControl(els.glowStrength, els.glowStrengthValue, "glowStrength", clamp(0.04 + overall * 0.18 * intensity + auto.beatPulse * 0.08, 0, GLOW_STRENGTH_MAX), 2, function (value) {
           return value.toFixed(2);
         });
         setRangeControl(els.sparkPower, els.sparkPowerValue, "sparkPower", clamp(0.7 + treble * 1.15 * intensity + auto.beatPulse * 0.34, 0.4, 2.5), 2, function (value) {
@@ -2113,7 +2581,6 @@
 
       function pulseAutoVj(bass, mid, treble, overall, intensity) {
         state.autoVjBoosts.stardust = Math.max(state.autoVjBoosts.stardust, (overall * 0.45 + bass * 0.55) * intensity);
-        state.autoVjBoosts.quake = Math.max(state.autoVjBoosts.quake, bass * 0.95 * intensity);
         state.autoVjBoosts.glitch = Math.max(state.autoVjBoosts.glitch, treble * 0.78 * intensity);
         state.autoVjBoosts.grunge = Math.max(state.autoVjBoosts.grunge, mid * 0.42 * intensity);
         state.autoVjBoosts.zoom = Math.max(state.autoVjBoosts.zoom, bass * 0.32 * intensity);
@@ -2131,7 +2598,6 @@
         setToggleControl(els.mirrorHorizontal, "mirrorHorizontal", scene.mirrorHorizontal);
         setToggleControl(els.glitchReactive, "glitchReactive", scene.glitchReactive);
         setToggleControl(els.grungeReactive, "grungeReactive", scene.grungeReactive);
-        setToggleControl(els.quakeReactive, "quakeReactive", scene.quakeReactive);
         setToggleControl(els.zoomReactive, "zoomReactive", scene.zoomReactive);
         setRangeControl(els.kaleidoscopeSides, els.kaleidoscopeSidesValue, "kaleidoscopeSides", scene.sides, 0, function (value) {
           return String(Math.round(value));
@@ -2152,13 +2618,12 @@
         if (forceDrop || (bass > mid * 1.18 && bass > treble * 1.08)) {
           return {
             label: "Drop scene",
-            modes: ["stardust", "emitter", "torus"],
+            modes: ["infiniteFractal", "stardust", "audioTunnel", "starGate", "shardBurst"],
             kaleidoscope: false,
             mirrorVertical: false,
             mirrorHorizontal: false,
             glitchReactive: false,
             grungeReactive: false,
-            quakeReactive: true,
             zoomReactive: true,
             sides: 6
           };
@@ -2166,13 +2631,12 @@
         if (treble > bass * 1.12 && treble > mid * 0.94) {
           return {
             label: "Spark scene",
-            modes: ["stardust", "wave", "torusKnot"],
+            modes: ["plasmaBall", "electricWeb", "cometField", "ribbonFlow"],
             kaleidoscope: true,
             mirrorVertical: state.autoVj.sceneIndex % 2 === 0,
             mirrorHorizontal: false,
             glitchReactive: true,
             grungeReactive: false,
-            quakeReactive: false,
             zoomReactive: true,
             sides: 8 + state.autoVj.sceneIndex * 2
           };
@@ -2180,33 +2644,30 @@
         if (mid > bass * 1.05) {
           return {
             label: "Shape scene",
-            modes: ["particles", "spiral", "icosahedron"],
+            modes: ["cymaticPlate", "flowerMandala", "orbitSystem", "vortexRings"],
             kaleidoscope: state.autoVj.sceneIndex % 2 === 1,
             mirrorVertical: false,
             mirrorHorizontal: state.autoVj.sceneIndex % 2 === 0,
             glitchReactive: false,
             grungeReactive: true,
-            quakeReactive: false,
             zoomReactive: false,
             sides: 5 + state.autoVj.sceneIndex
           };
         }
         return {
           label: "Crown scene",
-          modes: ["crown", "stardust", "wave"],
+          modes: ["crown", "crystalCave", "dodecahedron", "sphereMesh"],
           kaleidoscope: state.autoVj.sceneIndex % 3 === 0,
           mirrorVertical: false,
           mirrorHorizontal: false,
           glitchReactive: false,
           grungeReactive: true,
-          quakeReactive: false,
           zoomReactive: true,
           sides: 10
         };
       }
 
       function applyAutoDrop(time) {
-        state.autoVjBoosts.quake = Math.max(state.autoVjBoosts.quake, 1.1 * config.autoVjIntensity);
         state.autoVjBoosts.stardust = Math.max(state.autoVjBoosts.stardust, 1.0 * config.autoVjIntensity);
         state.autoVjBoosts.zoom = Math.max(state.autoVjBoosts.zoom, 0.46 * config.autoVjIntensity);
         if (time > state.autoVj.nextSceneTime - 1.2) {
@@ -2303,6 +2764,12 @@
           checkbox.checked = config.enabledModes.indexOf(checkbox.getAttribute("data-mode")) !== -1;
         });
 
+        document.querySelectorAll("[data-mode-band]").forEach(function (checkbox) {
+          var modeId = checkbox.getAttribute("data-mode-band");
+          var band = checkbox.getAttribute("data-band");
+          checkbox.checked = isModeBandEnabled(modeId, band);
+        });
+
         updateRotationControls();
         updateManualRotationTarget();
       }
@@ -2360,9 +2827,13 @@
           mode = createTriangleMode();
         } else if (id === "crown") {
           mode = createCymaticCrownMode();
+        } else if (id === "infiniteFractal") {
+          mode = createInfiniteFractalMode();
         } else if (id === "video") {
           mode = createVideoMode();
-        } else if (id === "torus" || id === "torusKnot" || id === "icosahedron" || id === "octahedron") {
+        } else if (VARIANT_MODE_DEFS[id]) {
+          mode = createVariantMode(id);
+        } else if (id === "torus" || id === "torusKnot" || id === "icosahedron" || id === "octahedron" || id === "dodecahedron" || id === "sphereMesh") {
           mode = createMeshMode(id);
         }
 
@@ -2959,6 +3430,10 @@
           geometry = new THREE.TorusKnotGeometry(108, 23, 220, 24);
         } else if (id === "icosahedron") {
           geometry = new THREE.IcosahedronGeometry(145, 4);
+        } else if (id === "dodecahedron") {
+          geometry = new THREE.DodecahedronGeometry(145, 4);
+        } else if (id === "sphereMesh") {
+          geometry = new THREE.SphereGeometry(145, 96, 48);
         } else {
           geometry = new THREE.OctahedronGeometry(150, 4);
         }
@@ -2973,7 +3448,9 @@
           torus: 0x35e6d4,
           torusKnot: 0xff4f9a,
           icosahedron: 0x9bff78,
-          octahedron: 0xffbe55
+          octahedron: 0xffbe55,
+          dodecahedron: 0xb6ffea,
+          sphereMesh: 0x9fb7ff
         };
 
         var material = new THREE.MeshStandardMaterial({
@@ -3028,18 +3505,30 @@
         if (id === "octahedron") {
           group.rotation.x = -0.32;
         }
+        if (id === "dodecahedron") {
+          group.rotation.y = 0.28;
+        }
+        if (id === "sphereMesh") {
+          group.rotation.x = 0.18;
+        }
 
         return {
           object: group,
           update: function (delta, time) {
             var pos = position.array;
             var count = position.count;
-            var profile = id === "torus" ? state.levels.bass : id === "torusKnot" ? state.levels.mid : state.levels.treble;
-            var amp = 8 + profile * 42 + state.levels.overall * 22;
+            var profile = id === "torus" ? state.levels.bass : id === "torusKnot" ? state.levels.mid : id === "dodecahedron" ? state.levels.bass * 0.55 + state.levels.mid * 0.65 : id === "sphereMesh" ? state.levels.overall : state.levels.treble;
+            var amp = 8 + profile * (id === "sphereMesh" ? 68 : id === "dodecahedron" ? 58 : 42) + state.levels.overall * 24;
             for (var i = 0; i < count; i += 1) {
               var idx = i * 3;
               var freq = sampleFrequency((i % 900) / 900);
               var ripple = Math.sin(time * (1.4 + profile * 1.2) + base[idx] * 0.025 + base[idx + 1] * 0.019 + freq * 3.2);
+              if (id === "dodecahedron") {
+                ripple += Math.pow(Math.max(0, Math.sin(base[idx] * 0.035 - base[idx + 2] * 0.024 + time * (2.1 + state.levels.mid))), 3) * (0.8 + state.levels.bass);
+              }
+              if (id === "sphereMesh") {
+                ripple += Math.sin(base[idx] * 0.042 + base[idx + 2] * 0.036 + time * (2.4 + state.levels.treble * 2.2)) * (0.55 + state.levels.mid);
+              }
               var displacement = ripple * amp * (0.35 + freq);
               pos[idx] = base[idx] + normalBase[idx] * displacement;
               pos[idx + 1] = base[idx + 1] + normalBase[idx + 1] * displacement;
@@ -3054,6 +3543,468 @@
             wire.material.opacity = clamp(0.22 + state.levels.treble * 0.42, 0.18, 0.72);
             group.rotation.x += delta * (0.08 + state.levels.mid * 0.22);
             group.rotation.y += delta * (0.11 + state.levels.bass * 0.28);
+          }
+        };
+      }
+
+      function createVariantMode(id) {
+        var def = VARIANT_MODE_DEFS[id];
+        var requested = Math.max(0, Math.round(config.particleCount));
+        var count = requested === 0 ? 0 : clamp(Math.round(requested * (def.density || 0.75)), def.min || 400, def.max || 1600);
+        var positions = new Float32Array(count * 3);
+        var colors = new Float32Array(count * 3);
+        var seeds = new Float32Array(count * 6);
+        var color = new THREE.Color();
+
+        for (var i = 0; i < count; i += 1) {
+          var seedIdx = i * 6;
+          seeds[seedIdx] = Math.random();
+          seeds[seedIdx + 1] = Math.random();
+          seeds[seedIdx + 2] = Math.random();
+          seeds[seedIdx + 3] = Math.random();
+          seeds[seedIdx + 4] = Math.random();
+          seeds[seedIdx + 5] = Math.random();
+        }
+
+        var geometry = new THREE.BufferGeometry();
+        geometry.setAttribute("position", new THREE.BufferAttribute(positions, 3));
+        geometry.setAttribute("color", new THREE.BufferAttribute(colors, 3));
+
+        var material = new THREE.PointsMaterial({
+          size: config.particleSize * 0.95,
+          map: getSparkTexture(),
+          vertexColors: true,
+          transparent: true,
+          opacity: 0.9,
+          depthWrite: false,
+          blending: THREE.AdditiveBlending
+        });
+
+        var glowMaterial = new THREE.PointsMaterial({
+          size: config.particleSize * 5.4,
+          map: getGlowTexture(),
+          vertexColors: true,
+          transparent: true,
+          opacity: 0.24,
+          depthWrite: false,
+          blending: THREE.AdditiveBlending
+        });
+
+        var glow = new THREE.Points(geometry, glowMaterial);
+        glow.name = id + "-glow";
+        var points = new THREE.Points(geometry, material);
+        points.name = id + "-points";
+
+        var group = new THREE.Group();
+        group.name = id;
+        group.add(glow);
+        group.add(points);
+
+        var flare = null;
+        if (def.flare) {
+          flare = createGlowSprite(def.flare, 150);
+          flare.name = id + "-flare";
+          group.add(flare);
+        }
+
+        var lineCount = def.line && count > 1 ? Math.min(count, 620) : 0;
+        var lineGeometry = null;
+        var lineMaterial = null;
+        if (lineCount > 0) {
+          lineGeometry = new THREE.BufferGeometry();
+          lineGeometry.setAttribute("position", new THREE.BufferAttribute(new Float32Array(lineCount * 6), 3));
+          lineGeometry.setAttribute("color", new THREE.BufferAttribute(new Float32Array(lineCount * 6), 3));
+          lineMaterial = new THREE.LineBasicMaterial({
+            vertexColors: true,
+            transparent: true,
+            opacity: 0.28,
+            blending: THREE.AdditiveBlending,
+            depthWrite: false
+          });
+          var lines = new THREE.LineSegments(lineGeometry, lineMaterial);
+          lines.name = id + "-lines";
+          group.add(lines);
+        }
+
+        function writeColor(idx, freq, light, hueShift) {
+          var hue = (def.hue + hueShift + freq * 0.08 + state.levels.treble * 0.04) % 1;
+          color.setHSL(hue, clamp((def.saturation || 0.75) + freq * 0.12, 0.12, 1), clamp(light, 0.08, 1));
+          colors[idx] = color.r;
+          colors[idx + 1] = color.g;
+          colors[idx + 2] = color.b;
+        }
+
+        function setPosition(i, time) {
+          var idx = i * 3;
+          var seedIdx = i * 6;
+          var a = seeds[seedIdx];
+          var b = seeds[seedIdx + 1];
+          var c = seeds[seedIdx + 2];
+          var d = seeds[seedIdx + 3];
+          var e = seeds[seedIdx + 4];
+          var f = seeds[seedIdx + 5];
+          var low = state.levels.bass;
+          var mid = state.levels.mid;
+          var high = state.levels.treble;
+          var overall = state.levels.overall;
+          var freq = sampleFrequency(a);
+          var theta = a * Math.PI * 2;
+          var radius = 100;
+          var x = 0;
+          var y = 0;
+          var z = 0;
+          var light = 0.45 + freq * 0.3 + overall * 0.16;
+          var hueShift = 0;
+
+          if (id === "nebula") {
+            var phi = Math.acos(b * 2 - 1);
+            radius = (70 + Math.pow(c, 0.45) * 250) * (1 + low * 0.36);
+            theta += time * (0.08 + mid * 0.28) + d * 1.2;
+            x = Math.cos(theta) * Math.sin(phi) * radius + Math.sin(time * 0.48 + a * 8) * 34 * mid;
+            y = Math.cos(phi) * radius * 0.76 + Math.sin(time * 0.7 + e * 9) * 18 * high;
+            z = Math.sin(theta) * Math.sin(phi) * radius * 0.92;
+            light = 0.24 + c * 0.28 + freq * 0.22 + high * 0.25;
+          } else if (id === "blackHole") {
+            radius = (18 + Math.pow(c, 1.75) * 330) * (1 - low * 0.2);
+            theta += time * (0.32 + low * 0.95) / (0.35 + c);
+            x = Math.cos(theta) * radius;
+            y = (b - 0.5) * 42 * (0.45 + mid);
+            z = Math.sin(theta) * radius * 0.56;
+            if (c < 0.08) {
+              x *= 0.18;
+              y *= 0.18;
+              z *= 0.18;
+              light += 0.28 + high * 0.3;
+            }
+            hueShift = c * 0.14;
+          } else if (id === "crystalCave") {
+            var crystal = Math.floor(a * 18);
+            theta = crystal / 18 * Math.PI * 2 + (b - 0.5) * 0.22;
+            radius = 68 + Math.floor(c * 5) * 48 + e * 24;
+            var height = 55 + d * 210 + mid * 90;
+            y = -165 + f * height;
+            x = Math.cos(theta) * radius + (d - 0.5) * 18;
+            z = Math.sin(theta) * radius * 0.7 + (e - 0.5) * 18;
+            if (f > 0.82) {
+              x *= 0.88;
+              z *= 0.88;
+            }
+            light = 0.38 + f * 0.4 + high * 0.18;
+          } else if (id === "laserGrid") {
+            var cols = 42;
+            var gx = i % cols;
+            var gz = Math.floor(i / cols) % cols;
+            x = (gx / (cols - 1) - 0.5) * 650;
+            z = (gz / (cols - 1) - 0.5) * 440;
+            var cell = Math.sin(gx * 0.72 + time * (2.1 + high * 5.4)) * Math.cos(gz * 0.53 - time * (1.6 + low * 3.2));
+            var diagonal = Math.sin((gx + gz) * 0.42 + time * (2.6 + mid * 4.6));
+            var glitch = high * (Math.sin(time * 18 + d * 80) > 0.55 ? 1 : 0);
+            y = -154 + cell * (42 + low * 120) + diagonal * high * 82 + Math.sin((gx - gz) * 0.33 + time * 4.4) * mid * 58;
+            x += diagonal * mid * 52 + (d - 0.5) * glitch * 120;
+            z += cell * low * 70 + (e - 0.5) * glitch * 120;
+            light = 0.28 + Math.abs(cell) * 0.3 + high * 0.42 + freq * 0.18;
+          } else if (id === "dnaHelix") {
+            var t = b;
+            var strand = Math.floor(a * 4);
+            var coil = 6.5 + low * 5.5 + high * 2;
+            theta = t * Math.PI * 2 * coil + strand * Math.PI * 0.5 + time * (0.72 + mid * 1.35);
+            var knot = Math.sin(t * Math.PI * 18 + time * (2.1 + high * 2.4) + d * 6);
+            radius = 62 + strand * 14 + low * 54 + knot * high * 42;
+            var braid = Math.sin(theta * 2.4 + time * 1.6) * mid * 62;
+            x = Math.cos(theta) * radius + Math.cos(theta * 0.5 + strand) * braid;
+            y = -215 + t * 430 + Math.sin(theta * 1.7) * high * 72;
+            z = Math.sin(theta) * radius + Math.sin(theta * 0.5 + strand) * braid;
+            light = 0.3 + high * 0.36 + mid * 0.18 + (strand % 2) * 0.08;
+          } else if (id === "plasmaBall") {
+            var pphi = Math.acos(b * 2 - 1);
+            var shell = 88 + c * 125 + Math.sin(time * 2.2 + d * 12) * high * 34;
+            radius = shell * (1 + low * 0.18);
+            x = Math.cos(theta) * Math.sin(pphi) * radius;
+            y = Math.cos(pphi) * radius;
+            z = Math.sin(theta) * Math.sin(pphi) * radius;
+            if (d < 0.22) {
+              radius *= 1.3 + high * 0.9;
+              x = Math.cos(theta + time * 1.3) * radius;
+              y *= 0.35 + c;
+              z = Math.sin(theta + time * 1.3) * radius;
+            }
+            light = 0.38 + high * 0.4 + freq * 0.22;
+          } else if (id === "audioTunnel") {
+            var tz = ((a + time * (0.06 + low * 0.45)) % 1);
+            z = -920 + tz * 1380;
+            radius = (70 + b * 285) * (0.7 + tz * 0.85);
+            theta = c * Math.PI * 2 + Math.floor(a * 28) * 0.04 + time * (0.1 + mid * 0.3);
+            x = Math.cos(theta) * radius;
+            y = Math.sin(theta) * radius * 0.58;
+            light = 0.24 + tz * 0.55 + high * 0.24;
+          } else if (id === "fractalTree") {
+            var branch = Math.floor(a * 15);
+            var depth = Math.floor(b * 10);
+            var tip = Math.pow(f, 3.2);
+            theta = branch / 15 * Math.PI * 2 + depth * 0.32 + Math.sin(time * (0.8 + high * 1.2) + d * 7) * (0.16 + mid * 0.5);
+            radius = depth * (21 + mid * 24) + c * 24 + tip * high * 135;
+            var spike = Math.pow(Math.max(0, Math.sin(time * 3.2 + branch + d * 9)), 5) * high * 160;
+            x = Math.cos(theta) * (radius + spike);
+            z = Math.sin(theta) * (radius + spike) * 0.72;
+            y = -190 + depth * 42 + d * 68 * (0.75 + mid) + tip * (72 + high * 160);
+            light = 0.22 + depth * 0.052 + tip * 0.32 + high * 0.28;
+          } else if (id === "rainMatrix") {
+            x = (a - 0.5) * 760;
+            z = (b - 0.5) * 460;
+            y = 260 - ((c + time * (0.1 + high * 0.62 + low * 0.18)) % 1) * 560;
+            x += Math.sin(time * 0.8 + d * 9) * 8 * mid;
+            light = 0.24 + high * 0.42 + (1 - c) * 0.18;
+          } else if (id === "liquidMetal") {
+            var lphi = Math.acos(b * 2 - 1);
+            radius = 118 + Math.sin(theta * 5 + time * 1.7) * 20 * mid + Math.cos(lphi * 6 + time * 1.2) * 24 * low + high * 18;
+            x = Math.cos(theta) * Math.sin(lphi) * radius;
+            y = Math.cos(lphi) * radius * 0.92;
+            z = Math.sin(theta) * Math.sin(lphi) * radius;
+            light = 0.42 + Math.sin(time + a * 12) * 0.08 + high * 0.22;
+          } else if (id === "wireMountain") {
+            var mcols = 46;
+            var mx = i % mcols;
+            var mz = Math.floor(i / mcols) % mcols;
+            x = (mx / (mcols - 1) - 0.5) * 640;
+            z = (mz / (mcols - 1) - 0.5) * 430;
+            var dist = Math.sqrt(x * x + z * z);
+            var octaveA = Math.sin(x * 0.024 + time * (1.1 + mid * 2.2)) * Math.cos(z * 0.028 - time * (0.9 + low * 2.1));
+            var octaveB = Math.sin((x + z) * 0.041 + time * (1.8 + high * 3.4));
+            var octaveC = Math.cos(dist * 0.035 - time * (2.2 + low * 3.6));
+            var ridge = Math.pow(Math.max(0, octaveA * 0.55 + octaveB * 0.35 + octaveC * 0.45), 2.4);
+            y = -178 + octaveA * (60 + low * 135) + octaveB * mid * 90 + octaveC * high * 80 + ridge * (110 + overall * 210);
+            x += octaveB * high * 28;
+            z += octaveA * mid * 30;
+            light = 0.26 + ridge * 0.42 + low * 0.2 + high * 0.2;
+          } else if (id === "solarFlare") {
+            var sphi = Math.acos(b * 2 - 1);
+            radius = 76 + c * 105;
+            if (d < 0.32) {
+              radius += (70 + e * 190) * (0.25 + high + low * 0.4);
+            }
+            theta += time * (0.12 + mid * 0.34);
+            x = Math.cos(theta) * Math.sin(sphi) * radius;
+            y = Math.cos(sphi) * radius;
+            z = Math.sin(theta) * Math.sin(sphi) * radius;
+            light = 0.42 + high * 0.36 + (d < 0.32 ? 0.22 : 0);
+          } else if (id === "orbitSystem") {
+            var orbit = Math.floor(a * 6);
+            radius = 62 + orbit * 38 + low * 18;
+            theta = b * Math.PI * 2 + time * (0.22 + mid * 0.52) * (orbit % 2 === 0 ? 1 : -1);
+            x = Math.cos(theta) * radius;
+            z = Math.sin(theta) * radius * (0.72 + orbit * 0.035);
+            y = (orbit - 2.5) * 18 + Math.sin(theta * 2 + time) * high * 22;
+            light = 0.34 + high * 0.28 + orbit * 0.035;
+          } else if (id === "cymaticPlate") {
+            radius = Math.sqrt(a) * 310;
+            theta = b * Math.PI * 2;
+            var nodes = 5 + Math.round(low * 12);
+            var nodal = Math.sin(theta * nodes + time * (0.5 + mid)) * Math.cos(radius * 0.045 - time * (1.2 + high));
+            x = Math.cos(theta) * radius;
+            z = Math.sin(theta) * radius * 0.72;
+            y = -132 + nodal * 62 * (0.28 + overall);
+            light = 0.28 + Math.abs(nodal) * 0.38 + high * 0.18;
+          } else if (id === "shardBurst") {
+            theta = Math.floor(a * 26) / 26 * Math.PI * 2 + b * 0.12;
+            radius = 24 + c * 320 * (0.72 + low * 0.8);
+            x = Math.cos(theta) * radius + Math.sin(time * 2 + d * 9) * high * 28;
+            y = (e - 0.5) * 260 + Math.sin(radius * 0.04 + time * 1.8) * mid * 46;
+            z = Math.sin(theta) * radius * 0.68;
+            light = 0.32 + c * 0.32 + high * 0.24;
+          } else if (id === "ribbonFlow") {
+            var strip = Math.floor(a * 7);
+            var rt = b;
+            x = -330 + rt * 660;
+            y = -130 + (strip - 3) * 42 + Math.sin(rt * Math.PI * 4 + time * (1.2 + mid * 1.5) + strip) * 34 * (0.4 + mid);
+            z = Math.cos(rt * Math.PI * 3 + time * 0.9 + strip) * 88 * (0.35 + low);
+            light = 0.32 + high * 0.25 + Math.abs(Math.sin(rt * Math.PI * 4)) * 0.18;
+          } else if (id === "cathedralLines") {
+            var arch = Math.floor(a * 17);
+            var side = arch - 8;
+            var climb = b;
+            var collapse = Math.sin(time * (1.5 + low * 2.4) + side * 0.9 + d * 8);
+            var twist = Math.sin(climb * Math.PI * (3 + high * 5) + time * (2.6 + mid * 2.4));
+            x = side * (35 + mid * 36) + Math.sin(climb * Math.PI) * 38 * Math.sign(side || 1) + collapse * high * 110;
+            y = -184 + climb * (190 + Math.abs(side) * 22 + mid * 150) + twist * high * 96;
+            z = -80 + Math.cos(climb * Math.PI) * 120 * (0.35 + c) + Math.sin(side + time * 2) * (40 + low * 120) * overall;
+            light = 0.24 + climb * 0.38 + Math.abs(twist) * 0.22 + high * 0.22;
+          } else if (id === "vortexRings") {
+            var ring = Math.floor(a * 18);
+            var echoLayer = Math.floor(c * 6);
+            var echoPhase = time * (0.38 + mid * 1.1) - echoLayer * 0.42;
+            theta = b * Math.PI * 2 + echoPhase + ring * 0.18;
+            var warp = Math.sin(theta * (2.5 + high * 5) + time * (2.2 + low * 2.8) + d * 8);
+            radius = 48 + ring * 16 + echoLayer * 34 + low * 78 + warp * (22 + high * 72);
+            x = Math.cos(theta + warp * high * 0.55) * radius + Math.sin(echoPhase + d * 5) * mid * 70;
+            y = -185 + ring * 23 + echoLayer * 18 + Math.sin(theta * 2.2 + time * 1.7) * (24 + high * 86);
+            z = Math.sin(theta - warp * mid * 0.45) * radius * (0.46 + echoLayer * 0.035) - echoLayer * 38;
+            light = 0.2 + (6 - echoLayer) * 0.048 + Math.abs(warp) * 0.26 + high * 0.22;
+          } else if (id === "particleFountain") {
+            var rise = (a + time * (0.12 + low * 0.52)) % 1;
+            theta = b * Math.PI * 2;
+            radius = (1 - rise) * (24 + c * 170) * (0.6 + mid * 0.8);
+            x = Math.cos(theta) * radius;
+            z = Math.sin(theta) * radius * 0.72;
+            y = -210 + rise * (410 + low * 170) - rise * rise * 170;
+            light = 0.32 + rise * 0.32 + high * 0.28;
+          } else if (id === "electricWeb") {
+            var webPhi = Math.acos(b * 2 - 1);
+            var arc = Math.pow(Math.max(0, Math.sin(time * (3.4 + high * 5.2) + d * 16)), 6);
+            radius = 70 + c * 270 + Math.sin(time * 1.8 + d * 8) * 44 * mid + arc * (120 + high * 210);
+            theta += Math.sin(time * 2.6 + e * 9) * (0.18 + high * 0.9);
+            x = Math.cos(theta) * Math.sin(webPhi) * radius + (d - 0.5) * high * 150;
+            y = Math.cos(webPhi) * radius * 0.68 + Math.sin(theta * 3 + time * 4) * high * 90;
+            z = Math.sin(theta) * Math.sin(webPhi) * radius + (e - 0.5) * mid * 120;
+            light = 0.26 + high * 0.46 + arc * 0.36 + (freq > 0.55 ? 0.18 : 0);
+          } else if (id === "pulseRings") {
+            var pulse = (a + time * (0.08 + low * 0.45)) % 1;
+            radius = 28 + pulse * 360;
+            theta = b * Math.PI * 2;
+            x = Math.cos(theta) * radius;
+            y = -100 + Math.sin(pulse * Math.PI) * 58 * mid;
+            z = Math.sin(theta) * radius * 0.68;
+            light = 0.24 + (1 - pulse) * 0.36 + high * 0.24;
+          } else if (id === "knotCloud") {
+            var kt = a * Math.PI * 2 * 2 + time * (0.16 + mid * 0.4);
+            var tube = 38 + Math.sin(kt * 3) * 16;
+            radius = 118 + tube * Math.cos(3 * kt);
+            x = radius * Math.cos(2 * kt) + (b - 0.5) * 40 * (1 + high);
+            y = radius * Math.sin(2 * kt) * 0.62 + (c - 0.5) * 54 * (1 + low);
+            z = tube * Math.sin(3 * kt) * 2.2 + (d - 0.5) * 54;
+            light = 0.34 + high * 0.28 + freq * 0.2;
+          } else if (id === "cometField") {
+            var cz = ((a + time * (0.08 + low * 0.55)) % 1);
+            x = (b - 0.5) * 760 + Math.sin(time * 0.9 + d * 6) * 30 * mid;
+            y = (c - 0.5) * 420;
+            z = -1000 + cz * 1460;
+            light = 0.22 + cz * 0.58 + high * 0.28;
+          } else if (id === "mirrorCity") {
+            var cityCols = 30;
+            var cx = i % cityCols;
+            var cz2 = Math.floor(i / cityCols) % 28;
+            var build = Math.sin(cx * 1.7 + cz2 * 0.8) * 0.5 + 0.5;
+            var height = 38 + build * 210 + low * 145 + sampleFrequency(cx / cityCols) * 110;
+            x = (cx / (cityCols - 1) - 0.5) * 650;
+            z = (cz2 / 27 - 0.5) * 430;
+            y = -195 + f * height;
+            light = 0.26 + f * 0.45 + high * 0.22;
+          } else if (id === "dataStorm") {
+            x = (a - 0.5) * 820 + Math.sin(time * 2.2 + d * 12) * 90 * mid;
+            y = (b - 0.5) * 520 + Math.cos(time * 1.6 + c * 9) * 44 * low;
+            z = -420 + ((c + time * (0.18 + high * 0.8)) % 1) * 680;
+            light = 0.28 + high * 0.42 + freq * 0.2;
+          } else if (id === "flowerMandala") {
+            radius = Math.sqrt(a) * 285;
+            theta = b * Math.PI * 2;
+            var petals = 6 + Math.round(mid * 12);
+            var petal = Math.pow((Math.cos(theta * petals + time * 0.7) + 1) * 0.5, 2.2);
+            radius *= 0.58 + petal * (0.52 + low * 0.28);
+            x = Math.cos(theta) * radius;
+            y = Math.sin(theta) * radius * 0.72;
+            z = Math.sin(time * 0.8 + radius * 0.03) * 48 * high + petal * 40 * overall;
+            light = 0.3 + petal * 0.34 + high * 0.2;
+          } else if (id === "starGate") {
+            var gate = Math.floor(a * 18);
+            var gt = (b + time * (0.06 + low * 0.38)) % 1;
+            z = -980 + gt * 1380;
+            radius = 70 + gate * 15 + Math.sin(time + gate) * 8 * mid;
+            theta = c * Math.PI * 2;
+            x = Math.cos(theta) * radius * (0.75 + gt * 0.65);
+            y = Math.sin(theta) * radius * 0.58 * (0.75 + gt * 0.65);
+            light = 0.24 + gt * 0.48 + high * 0.3;
+          }
+
+          positions[idx] = x * (def.scale || 1);
+          positions[idx + 1] = y * (def.scale || 1);
+          positions[idx + 2] = z * (def.scale || 1);
+          writeColor(idx, freq, light, hueShift);
+        }
+
+        function updateLines() {
+          if (!lineGeometry || lineCount === 0) {
+            return;
+          }
+          var pos = geometry.attributes.position.array;
+          var col = geometry.attributes.color.array;
+          var linePos = lineGeometry.attributes.position.array;
+          var lineCol = lineGeometry.attributes.color.array;
+          var trail = 18 + state.levels.bass * 90 + state.levels.treble * 55;
+          for (var i = 0; i < lineCount; i += 1) {
+            var aIdx = (i * 3) % count;
+            var jump = 1;
+            if (id === "electricWeb") {
+              jump = 7 + Math.round(state.levels.treble * 44 + state.levels.mid * 18);
+            } else if (id === "laserGrid") {
+              jump = i % 3 === 0 ? 42 : i % 3 === 1 ? 1 : 43;
+            } else if (id === "wireMountain") {
+              jump = i % 2 === 0 ? 46 : 1;
+            } else if (id === "dnaHelix") {
+              jump = 2 + Math.round(state.levels.treble * 12);
+            } else if (id === "fractalTree") {
+              jump = 9 + Math.round(state.levels.mid * 10);
+            } else if (id === "cathedralLines") {
+              jump = 11 + Math.round(state.levels.overall * 26);
+            } else if (id === "vortexRings") {
+              jump = 3 + Math.round(state.levels.mid * 22 + state.levels.treble * 12);
+            }
+            var bIdx = (aIdx + jump) % count;
+            var start = aIdx * 3;
+            var end = bIdx * 3;
+            var out = i * 6;
+            linePos[out] = pos[start];
+            linePos[out + 1] = pos[start + 1];
+            linePos[out + 2] = pos[start + 2];
+            if (id === "cometField" || id === "dataStorm") {
+              linePos[out + 3] = pos[start] - Math.sin(seeds[aIdx * 6] * Math.PI * 2) * trail * 0.35;
+              linePos[out + 4] = pos[start + 1];
+              linePos[out + 5] = pos[start + 2] - trail;
+            } else if (id === "rainMatrix") {
+              linePos[out + 3] = pos[start];
+              linePos[out + 4] = pos[start + 1] + trail * 0.7;
+              linePos[out + 5] = pos[start + 2];
+            } else {
+              linePos[out + 3] = pos[end];
+              linePos[out + 4] = pos[end + 1];
+              linePos[out + 5] = pos[end + 2];
+              if (id === "electricWeb" || id === "cathedralLines") {
+                linePos[out + 3] += (seeds[aIdx * 6 + 3] - 0.5) * state.levels.treble * 110;
+                linePos[out + 4] += (seeds[aIdx * 6 + 4] - 0.5) * state.levels.mid * 120;
+                linePos[out + 5] += (seeds[aIdx * 6 + 5] - 0.5) * state.levels.bass * 110;
+              }
+            }
+            lineCol[out] = col[start];
+            lineCol[out + 1] = col[start + 1];
+            lineCol[out + 2] = col[start + 2];
+            lineCol[out + 3] = col[start] * 0.35;
+            lineCol[out + 4] = col[start + 1] * 0.35;
+            lineCol[out + 5] = col[start + 2] * 0.35;
+          }
+          lineGeometry.attributes.position.needsUpdate = true;
+          lineGeometry.attributes.color.needsUpdate = true;
+          lineMaterial.opacity = clamp(0.12 + state.levels.mid * 0.22 + state.levels.treble * 0.22, 0.08, 0.58);
+        }
+
+        return {
+          attachToScene: !!def.attachToScene,
+          object: group,
+          update: function (delta, time) {
+            for (var i = 0; i < count; i += 1) {
+              setPosition(i, time);
+            }
+            geometry.attributes.position.needsUpdate = true;
+            geometry.attributes.color.needsUpdate = true;
+            updateLines();
+
+            material.size = config.particleSize * (0.72 + state.levels.treble * 1.45 + config.sparkPower * 0.16);
+            glowMaterial.size = config.particleSize * (4.6 + state.levels.overall * 4.8 + config.sparkPower * 0.8);
+            material.opacity = clamp(0.56 + state.levels.overall * 0.42, 0.42, 1);
+            glowMaterial.opacity = clamp(0.12 + state.levels.overall * 0.32 + state.levels.treble * 0.12, 0.08, 0.56);
+            if (flare) {
+              flare.scale.setScalar(110 + state.levels.bass * 120 + state.levels.treble * 70);
+              flare.material.opacity = clamp(0.12 + state.levels.overall * 0.4, 0.06, 0.62);
+            }
+            group.rotation.y += delta * (0.025 + state.levels.mid * 0.08);
+            group.rotation.x += delta * (id === "audioTunnel" || id === "starGate" ? 0 : state.levels.bass * 0.035);
           }
         };
       }
@@ -3259,19 +4210,6 @@
         group.position.y = -18;
         group.add(crownGlow);
         group.add(crownPoints);
-
-        var beamMaterial = new THREE.MeshBasicMaterial({
-          color: 0xd9f2ff,
-          transparent: true,
-          opacity: 0.08,
-          side: THREE.DoubleSide,
-          depthWrite: false,
-          blending: THREE.AdditiveBlending
-        });
-        var beam = new THREE.Mesh(new THREE.CylinderGeometry(34, 92, 620, 48, 1, true), beamMaterial);
-        beam.name = "crown-light-beam";
-        beam.position.y = 248;
-        group.add(beam);
 
         var floorRings = [];
         [120, 184, 252, 326, 398].forEach(function (radius, index) {
@@ -3807,12 +4745,65 @@
             snowMaterial.size = config.particleSize * (1.1 + high * 2.2);
             snowMaterial.opacity = clamp(0.24 + high * 0.44, 0.18, 0.72);
 
-            beam.scale.x = 1 + low * 0.22 + high * 0.18;
-            beam.scale.z = 1 + low * 0.22 + high * 0.18;
-            beamMaterial.opacity = clamp(0.06 + overall * 0.18 + high * 0.12, 0.04, 0.36);
             lowOrb.rotation.y += delta * (0.08 + low * 0.26);
             group.rotation.y += delta * (0.035 + mid * 0.08);
             group.rotation.x = Math.sin(time * 0.36) * 0.05;
+          }
+        };
+      }
+
+      function createInfiniteFractalMode() {
+        var geometry = new THREE.PlaneGeometry(2, 2);
+        var material = new THREE.ShaderMaterial({
+          uniforms: {
+            resolution: { value: new THREE.Vector2(window.innerWidth, window.innerHeight) },
+            time: { value: 0 },
+            bass: { value: 0 },
+            mid: { value: 0 },
+            treble: { value: 0 },
+            overall: { value: 0 },
+            hueShift: { value: 0 }
+          },
+          vertexShader: FRACTAL_VERTEX_SHADER,
+          fragmentShader: INFINITE_FRACTAL_FRAGMENT_SHADER,
+          transparent: true,
+          side: THREE.DoubleSide,
+          depthTest: false,
+          depthWrite: false,
+          blending: THREE.NormalBlending
+        });
+
+        var mesh = new THREE.Mesh(geometry, material);
+        mesh.name = "infinite-fractal-plane";
+        mesh.frustumCulled = false;
+        mesh.renderOrder = -8;
+
+        var group = new THREE.Group();
+        group.name = "infinite-fractal";
+        group.frustumCulled = false;
+        group.add(mesh);
+
+        return {
+          attachToScene: true,
+          object: group,
+          update: function (delta, time) {
+            var distance = 560;
+            var fov = THREE.MathUtils.degToRad(state.camera.fov);
+            var height = 2 * Math.tan(fov * 0.5) * distance;
+            var width = height * state.camera.aspect;
+
+            group.position.copy(state.camera.position);
+            group.quaternion.copy(state.camera.quaternion);
+            mesh.position.set(0, 0, -distance);
+            mesh.scale.set(width, height, 1);
+
+            material.uniforms.resolution.value.set(window.innerWidth, window.innerHeight);
+            material.uniforms.time.value = time;
+            material.uniforms.bass.value = state.levels.bass;
+            material.uniforms.mid.value = state.levels.mid;
+            material.uniforms.treble.value = state.levels.treble;
+            material.uniforms.overall.value = state.levels.overall;
+            material.uniforms.hueShift.value = config.colorHue / 180;
           }
         };
       }
@@ -3931,8 +4922,8 @@
       function scheduleParticleRebuild() {
         window.clearTimeout(state.rebuildTimer);
         state.rebuildTimer = window.setTimeout(function () {
-          ["particles", "spiral", "emitter", "crown", "video"].forEach(function (id) {
-            if (state.modes[id]) {
+          MODE_IDS.forEach(function (id) {
+            if (state.modes[id] && (id === "particles" || id === "spiral" || id === "emitter" || id === "crown" || id === "video" || VARIANT_MODE_DEFS[id])) {
               rebuildMode(id);
             }
           });
@@ -4412,7 +5403,7 @@
         next.autoVjEnabled = !!next.autoVjEnabled;
         next.autoVjIntensity = clamp(Number(next.autoVjIntensity) || 0.65, 0, 1);
         next.autoVjScenePace = clamp(Number(next.autoVjScenePace) || 1, 0.25, 2);
-        next.glowStrength = clamp(Number(next.glowStrength) || 0, 0, 3);
+        next.glowStrength = clamp(Number(next.glowStrength) || 0, 0, GLOW_STRENGTH_MAX);
         next.sparkPower = clamp(Number(next.sparkPower) || 1.3, 0.4, 2.5);
         next.colorHue = clamp(Number(next.colorHue) || 0, -180, 180);
         var colorSaturation = Number(next.colorSaturation);
@@ -4454,6 +5445,7 @@
             return MODE_IDS.indexOf(id) !== -1;
           })
           : [];
+        next.modeBands = normalizeModeBands(next.modeBands);
         return next;
       }
 
@@ -4543,7 +5535,6 @@
           config.mirrorHorizontalReactive ||
           state.autoVjBoosts.glitch > 0.001 ||
           state.autoVjBoosts.grunge > 0.001 ||
-          state.autoVjBoosts.quake > 0.001 ||
           state.autoVjBoosts.zoom > 0.001;
         if (!post || (config.glowStrength <= 0 && !hasColorTuning && !hasEffects)) {
           state.renderer.setRenderTarget(null);
@@ -4577,7 +5568,7 @@
         if (config.quakeReactive) {
           quakeStrength = clamp(config.quakeStrength + bass * 1.25 + mid * 0.16, 0, 1.5);
         }
-        quakeStrength = clamp(quakeStrength + state.controllerBoosts.quake + state.autoVjBoosts.quake, 0, 1.5);
+        quakeStrength = clamp(quakeStrength + state.controllerBoosts.quake, 0, 1.5);
         if (config.zoomReactive) {
           zoomAmount = clamp(config.zoomAmount + bass * 0.46 + overall * 0.14, 0.5, 2.5);
         }
@@ -4618,7 +5609,7 @@
         post.quad.material = post.finalMaterial;
         post.finalMaterial.uniforms.tScene.value = post.sceneTarget.texture;
         post.finalMaterial.uniforms.tBloom.value = source.texture;
-        post.finalMaterial.uniforms.strength.value = config.glowStrength * (0.72 + state.levels.overall * 0.72);
+        post.finalMaterial.uniforms.strength.value = clamp(config.glowStrength * (0.72 + state.levels.overall * 0.72), 0, GLOW_STRENGTH_MAX);
         post.finalMaterial.uniforms.hueShift.value = THREE.MathUtils.degToRad(config.colorHue);
         post.finalMaterial.uniforms.saturation.value = config.colorSaturation * (1.12 + treble * 0.28);
         post.finalMaterial.uniforms.kaleidoscopeSides.value = config.kaleidoscopeEnabled ? kaleidoscopeSides : 0;
@@ -4667,6 +5658,7 @@
           state.atmosphere.rotation.y += delta * 0.008;
         }
 
+        var baseLevels = state.levels;
         Object.keys(state.modes).forEach(function (id) {
           var mode = state.modes[id];
           if (config.enabledModes.indexOf(id) === -1) {
@@ -4679,9 +5671,15 @@
             mode.object.visible = true;
           }
           if (mode.update) {
-            mode.update(delta, time);
+            state.levels = getModeAudioLevels(id, baseLevels);
+            try {
+              mode.update(delta, time);
+            } finally {
+              state.levels = baseLevels;
+            }
           }
         });
+        state.levels = baseLevels;
 
         renderWithGlow(time);
       }
