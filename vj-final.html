@@ -258,6 +258,86 @@
       line-height: 1.35;
     }
 
+    .midi-map-panel {
+      display: grid;
+      gap: 9px;
+      margin-top: 12px;
+    }
+
+    .midi-learn-row {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 74px 64px;
+      gap: 7px;
+    }
+
+    .midi-learn-row select {
+      min-width: 0;
+      min-height: 34px;
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      background: rgba(255, 255, 255, 0.06);
+      color: var(--text);
+      padding: 0 9px;
+      font: inherit;
+      font-size: 12px;
+      font-weight: 700;
+      outline: none;
+    }
+
+    .midi-map-list {
+      max-height: 190px;
+      display: grid;
+      gap: 5px;
+      overflow-y: auto;
+      padding-right: 2px;
+      scrollbar-color: rgba(255, 255, 255, 0.22) transparent;
+    }
+
+    .midi-map-row {
+      min-height: 30px;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(82px, auto) 28px;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 5px 4px 8px;
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      background: rgba(255, 255, 255, 0.04);
+    }
+
+    .midi-map-target,
+    .midi-map-source {
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .midi-map-target {
+      color: #e5e9ef;
+      font-size: 11px;
+      font-weight: 750;
+    }
+
+    .midi-map-source {
+      color: var(--muted);
+      font-size: 10px;
+      font-variant-numeric: tabular-nums;
+      text-align: right;
+    }
+
+    .midi-map-row button {
+      min-height: 24px;
+      padding: 0;
+      border-radius: 6px;
+      font-size: 12px;
+    }
+
+    .midi-map-row.is-learning {
+      border-color: rgba(53, 230, 212, 0.72);
+      background: rgba(53, 230, 212, 0.1);
+    }
+
     .file-button input {
       position: absolute;
       width: 1px;
@@ -292,6 +372,72 @@
       font-weight: 800;
       letter-spacing: 0;
       text-transform: uppercase;
+    }
+
+    .accordion-trigger {
+      width: 100%;
+      min-height: 34px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin: -2px 0 0;
+      padding: 0;
+      border: 0;
+      border-radius: 0;
+      background: transparent;
+      color: #e7ecf4;
+      text-align: left;
+      text-transform: uppercase;
+    }
+
+    .accordion-trigger:hover {
+      border-color: transparent;
+      background: transparent;
+      color: #ffffff;
+      transform: none;
+    }
+
+    .accordion-trigger span:first-child {
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      font-size: 11px;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+
+    .accordion-icon {
+      width: 22px;
+      height: 22px;
+      flex: 0 0 22px;
+      display: grid;
+      place-items: center;
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      background: rgba(255, 255, 255, 0.06);
+    }
+
+    .accordion-icon::before {
+      content: "";
+      width: 7px;
+      height: 7px;
+      border-right: 2px solid currentColor;
+      border-bottom: 2px solid currentColor;
+      transform: translateY(-2px) rotate(45deg);
+      transition: transform 160ms ease;
+    }
+
+    .accordion-trigger[aria-expanded="true"] .accordion-icon::before {
+      transform: translateY(2px) rotate(225deg);
+    }
+
+    .accordion-panel {
+      margin-top: 10px;
+    }
+
+    .accordion-panel[hidden] {
+      display: none;
     }
 
     .mode-grid {
@@ -673,6 +819,7 @@
     <header class="panel-header" id="panelHeader">
       <div class="panel-title"><span class="signal-dot"></span><span>Control Panel</span></div>
       <div class="panel-actions">
+        <button class="icon-only" id="popoutButton" type="button" title="Pop out controls" aria-label="Pop out controls">^</button>
         <button class="icon-only" id="minimizeButton" type="button" title="Minimize" aria-label="Minimize panel">-</button>
       </div>
     </header>
@@ -743,6 +890,18 @@
           <span id="gamepadStatus">Gamepad idle</span>
           <span id="midiStatus">MIDI idle</span>
         </div>
+        <div class="midi-map-panel">
+          <div class="midi-learn-row">
+            <select id="midiLearnTarget" aria-label="MIDI learn target"></select>
+            <button id="midiLearnButton" type="button">Learn</button>
+            <button id="midiClearButton" type="button">Clear</button>
+          </div>
+          <div class="controller-status">
+            <span id="midiLearnStatus">Select target, press Learn, then touch APC40 MK2</span>
+            <span id="midiLastInput">Last input --</span>
+          </div>
+          <div class="midi-map-list" id="midiMapList" aria-label="MIDI mapping list"></div>
+        </div>
       </section>
 
       <section class="control-section">
@@ -764,8 +923,13 @@
       </section>
 
       <section class="control-section">
-        <h2>Mode Bands</h2>
-        <div class="band-matrix" id="modeBandGrid"></div>
+        <button class="accordion-trigger" id="modeBandToggle" type="button" aria-expanded="false" aria-controls="modeBandPanel">
+          <span>Mode Bands</span>
+          <span class="accordion-icon" aria-hidden="true"></span>
+        </button>
+        <div class="accordion-panel" id="modeBandPanel" hidden>
+          <div class="band-matrix" id="modeBandGrid"></div>
+        </div>
       </section>
 
       <section class="control-section">
@@ -963,6 +1127,11 @@
       "use strict";
 
       var CONFIG_KEY = "vj-cymatics-3d-config-v1";
+      var MIDI_MAP_KEY = "vj-cymatics-3d-midi-map-v1";
+      var MODE_STATE_KEY = "vj-cymatics-3d-mode-state-v1";
+      var UI_STATE_KEY = "vj-cymatics-3d-ui-state-v1";
+      var APC40_RGB_GREEN = 21;
+      var APC40_LED_ON = 1;
       var AI_IMAGE_ENDPOINT = "/api/generate-image";
       var GLOW_STRENGTH_MAX = 0.3;
       var MODE_IDS = [
@@ -1007,6 +1176,26 @@
         "dataStorm",
         "flowerMandala",
         "starGate",
+        "acidBloom",
+        "cellColony",
+        "juliaVeins",
+        "neuralMoss",
+        "liquidLattice",
+        "chromaSlime",
+        "amoebaGarden",
+        "myceliumWeb",
+        "oilMembrane",
+        "prismTissue",
+        "coralCircuit",
+        "plasmaCells",
+        "fractalSpores",
+        "synapseFlow",
+        "moltenMarble",
+        "pollenDream",
+        "spectralOrganism",
+        "mandelRiver",
+        "quantumFoam",
+        "bioGlyphs",
         "video"
       ];
       var MODE_LABELS = {
@@ -1051,6 +1240,26 @@
         dataStorm: "Data Storm",
         flowerMandala: "Flower Mandala",
         starGate: "Star Gate",
+        acidBloom: "Acid Bloom",
+        cellColony: "Cell Colony",
+        juliaVeins: "Julia Veins",
+        neuralMoss: "Neural Moss",
+        liquidLattice: "Liquid Lattice",
+        chromaSlime: "Chroma Slime",
+        amoebaGarden: "Amoeba Garden",
+        myceliumWeb: "Mycelium Web",
+        oilMembrane: "Oil Membrane",
+        prismTissue: "Prism Tissue",
+        coralCircuit: "Coral Circuit",
+        plasmaCells: "Plasma Cells",
+        fractalSpores: "Fractal Spores",
+        synapseFlow: "Synapse Flow",
+        moltenMarble: "Molten Marble",
+        pollenDream: "Pollen Dream",
+        spectralOrganism: "Spectral Organism",
+        mandelRiver: "Mandel River",
+        quantumFoam: "Quantum Foam",
+        bioGlyphs: "Bio Glyphs",
         video: "Video"
       };
       var BAND_IDS = ["low", "mid", "high"];
@@ -1063,6 +1272,105 @@
         low: "Low",
         mid: "Mid",
         high: "High"
+      };
+      var REMOTE_RANGE_CONTROLS = [
+        { key: "micSensitivity", label: "Mic Sensitivity", section: "Audio", min: 0.5, max: 8, step: 0.1, decimals: 1 },
+        { key: "micNoiseGate", label: "Noise Gate", section: "Audio", min: 0, max: 0.25, step: 0.01, decimals: 2 },
+        { key: "autoVjIntensity", label: "Auto Intensity", section: "Auto VJ", min: 0, max: 1, step: 0.01, decimals: 2 },
+        { key: "autoVjScenePace", label: "Scene Pace", section: "Auto VJ", min: 0.25, max: 2, step: 0.01, decimals: 2 },
+        { key: "particleCount", label: "Particle Count", section: "Animation", min: 0, max: 10000, step: 100, decimals: 0 },
+        { key: "stardustCount", label: "Stardust Count", section: "Animation", min: 500, max: 10000, step: 100, decimals: 0 },
+        { key: "particleSize", label: "Particle Size", section: "Animation", min: 0.1, max: 5, step: 0.1, decimals: 1 },
+        { key: "rotationSpeedX", label: "Rotation Speed X", section: "Animation", min: -1.5, max: 1.5, step: 0.01, decimals: 2 },
+        { key: "rotationSpeedY", label: "Rotation Speed Y", section: "Animation", min: -1.5, max: 1.5, step: 0.01, decimals: 2 },
+        { key: "manualRotationX", label: "Manual Rotation X", section: "Animation", min: -180, max: 180, step: 1, decimals: 0 },
+        { key: "manualRotationY", label: "Manual Rotation Y", section: "Animation", min: -180, max: 180, step: 1, decimals: 0 },
+        { key: "glowStrength", label: "Glow Strength", section: "Look", min: 0, max: GLOW_STRENGTH_MAX, step: 0.01, decimals: 2 },
+        { key: "sparkPower", label: "Spark Power", section: "Look", min: 0.4, max: 2.5, step: 0.05, decimals: 2 },
+        { key: "colorHue", label: "Hue", section: "Look", min: -180, max: 180, step: 1, decimals: 0 },
+        { key: "colorSaturation", label: "Saturation", section: "Look", min: 0, max: 2.5, step: 0.01, decimals: 2 },
+        { key: "kaleidoscopeSides", label: "Kaleidoscope Sides", section: "Effects", min: 3, max: 16, step: 1, decimals: 0 },
+        { key: "glitchStrength", label: "Glitch", section: "Effects", min: 0, max: 1.5, step: 0.01, decimals: 2 },
+        { key: "grungeStrength", label: "Grunge", section: "Effects", min: 0, max: 1.5, step: 0.01, decimals: 2 },
+        { key: "quakeStrength", label: "Earthquake", section: "Effects", min: 0, max: 1.5, step: 0.01, decimals: 2 },
+        { key: "zoomAmount", label: "Zoom", section: "Effects", min: 0.5, max: 2.5, step: 0.01, decimals: 2 },
+        { key: "mirrorVerticalPosition", label: "Mirror V Position", section: "Effects", min: 0.05, max: 0.95, step: 0.01, decimals: 2 },
+        { key: "mirrorHorizontalPosition", label: "Mirror H Position", section: "Effects", min: 0.05, max: 0.95, step: 0.01, decimals: 2 },
+        { key: "videoWidth", label: "Video Resolution", section: "Video", min: 120, max: 480, step: 10, decimals: 0 }
+      ];
+      var REMOTE_TOGGLE_CONTROLS = [
+        { key: "autoVjEnabled", label: "Auto Performance", section: "Auto VJ" },
+        { key: "autoRotate", label: "Auto Rotation", section: "Animation" },
+        { key: "kaleidoscopeEnabled", label: "Kaleidoscope", section: "Effects" },
+        { key: "kaleidoscopeReactive", label: "Kaleidoscope React", section: "Effects" },
+        { key: "glitchReactive", label: "Glitch React", section: "Effects" },
+        { key: "grungeReactive", label: "Grunge React", section: "Effects" },
+        { key: "quakeReactive", label: "Earthquake React", section: "Effects" },
+        { key: "zoomReactive", label: "Zoom React", section: "Effects" },
+        { key: "mirrorVertical", label: "Mirror Vertical", section: "Effects" },
+        { key: "mirrorVerticalReactive", label: "Mirror V React", section: "Effects" },
+        { key: "mirrorHorizontal", label: "Mirror Horizontal", section: "Effects" },
+        { key: "mirrorHorizontalReactive", label: "Mirror H React", section: "Effects" }
+      ];
+      var MIDI_CONTROL_TARGETS = [
+        { id: "cc:particleCount", type: "cc", target: "particleCount", label: "Particle Count" },
+        { id: "cc:stardustCount", type: "cc", target: "stardustCount", label: "Stardust Count" },
+        { id: "cc:particleSize", type: "cc", target: "particleSize", label: "Particle Size" },
+        { id: "cc:glowStrength", type: "cc", target: "glowStrength", label: "Glow Strength" },
+        { id: "cc:sparkPower", type: "cc", target: "sparkPower", label: "Spark Power" },
+        { id: "cc:colorHue", type: "cc", target: "colorHue", label: "Hue" },
+        { id: "cc:colorSaturation", type: "cc", target: "colorSaturation", label: "Saturation" },
+        { id: "cc:glitchStrength", type: "cc", target: "glitchStrength", label: "Glitch" },
+        { id: "cc:grungeStrength", type: "cc", target: "grungeStrength", label: "Grunge" },
+        { id: "cc:zoomAmount", type: "cc", target: "zoomAmount", label: "Zoom" },
+        { id: "cc:kaleidoscopeSides", type: "cc", target: "kaleidoscopeSides", label: "Kaleidoscope Sides" },
+        { id: "cc:manualRotationX", type: "cc", target: "manualRotationX", label: "Manual Rotation X" },
+        { id: "cc:manualRotationY", type: "cc", target: "manualRotationY", label: "Manual Rotation Y" },
+        { id: "cc:autoVjIntensity", type: "cc", target: "autoVjIntensity", label: "Auto Intensity" },
+        { id: "cc:autoVjScenePace", type: "cc", target: "autoVjScenePace", label: "Scene Pace" },
+        { id: "cc:micSensitivity", type: "cc", target: "micSensitivity", label: "Mic Sensitivity" }
+      ];
+      var MIDI_MODE_TARGETS = MODE_IDS.map(function (id) {
+        return {
+          id: "note:mode:" + id,
+          type: "note",
+          target: "mode:" + id,
+          label: "Mode - " + (MODE_LABELS[id] || id)
+        };
+      });
+      var MIDI_COMMAND_TARGETS = [
+        { id: "note:autoVj", type: "note", target: "autoVj", label: "Toggle Auto VJ" },
+        { id: "note:kaleidoscope", type: "note", target: "kaleidoscope", label: "Toggle Kaleidoscope" },
+        { id: "note:mirrorV", type: "note", target: "mirrorV", label: "Toggle Mirror V" },
+        { id: "note:mirrorH", type: "note", target: "mirrorH", label: "Toggle Mirror H" },
+        { id: "note:glitchReactive", type: "note", target: "glitchReactive", label: "Toggle Glitch React" },
+        { id: "note:grungeReactive", type: "note", target: "grungeReactive", label: "Toggle Grunge React" },
+        { id: "note:zoomReactive", type: "note", target: "zoomReactive", label: "Toggle Zoom React" },
+        { id: "note:nextMode", type: "note", target: "nextMode", label: "Next Mode" },
+        { id: "note:clearModes", type: "note", target: "clearModes", label: "Clear Modes" }
+      ];
+      var MIDI_TARGETS = MIDI_CONTROL_TARGETS.concat(MIDI_MODE_TARGETS, MIDI_COMMAND_TARGETS);
+      var BACKGROUND_MODE_DEFS = {
+        acidBloom: { variant: 0, hue: 0.78, flow: 0.92, complexity: 0.88 },
+        cellColony: { variant: 1, hue: 0.34, flow: 0.42, complexity: 0.82 },
+        juliaVeins: { variant: 2, hue: 0.58, flow: 0.56, complexity: 1.0 },
+        neuralMoss: { variant: 3, hue: 0.28, flow: 0.62, complexity: 0.74 },
+        liquidLattice: { variant: 4, hue: 0.5, flow: 0.76, complexity: 0.84 },
+        chromaSlime: { variant: 5, hue: 0.9, flow: 0.78, complexity: 0.78 },
+        amoebaGarden: { variant: 6, hue: 0.16, flow: 0.5, complexity: 0.76 },
+        myceliumWeb: { variant: 7, hue: 0.42, flow: 0.66, complexity: 0.92 },
+        oilMembrane: { variant: 8, hue: 0.08, flow: 0.52, complexity: 0.72 },
+        prismTissue: { variant: 9, hue: 0.66, flow: 0.7, complexity: 0.86 },
+        coralCircuit: { variant: 10, hue: 0.03, flow: 0.58, complexity: 0.8 },
+        plasmaCells: { variant: 11, hue: 0.6, flow: 0.84, complexity: 0.9 },
+        fractalSpores: { variant: 12, hue: 0.22, flow: 0.46, complexity: 0.96 },
+        synapseFlow: { variant: 13, hue: 0.56, flow: 0.96, complexity: 0.86 },
+        moltenMarble: { variant: 14, hue: 0.01, flow: 0.54, complexity: 0.78 },
+        pollenDream: { variant: 15, hue: 0.12, flow: 0.48, complexity: 0.7 },
+        spectralOrganism: { variant: 16, hue: 0.72, flow: 0.74, complexity: 0.94 },
+        mandelRiver: { variant: 17, hue: 0.48, flow: 0.64, complexity: 1.0 },
+        quantumFoam: { variant: 18, hue: 0.82, flow: 0.88, complexity: 0.9 },
+        bioGlyphs: { variant: 19, hue: 0.37, flow: 0.6, complexity: 0.82 }
       };
       var VARIANT_MODE_DEFS = {
         nebula: { hue: 0.64, saturation: 0.72, min: 700, max: 1500, density: 0.82, scale: 1, glow: 0x8edcff, flare: 0x8edcff },
@@ -1129,6 +1437,7 @@
         mirrorHorizontalPosition: 0.5,
         micSensitivity: 3.4,
         micNoiseGate: 0.03,
+        midiMappings: {},
         aiImagePrompt: "",
         videoWidth: 320,
         videoHeight: 240,
@@ -1222,7 +1531,7 @@
         "  float zoom = 1.18 + bass * 0.22 + sin(time * 0.12) * 0.03;",
         "  vec2 p = uv * zoom;",
         "  p.x = abs(p.x);",
-        "  vec3 color = vec3(0.055, 0.052, 0.042);",
+        "  vec3 color = vec3(0.018, 0.017, 0.014);",
         "  float relief = 0.0;",
         "  float shadow = 0.0;",
         "  float scroll = time * (0.025 + bass * 0.12 + overall * 0.05);",
@@ -1241,14 +1550,14 @@
         "    float balcony = stroke(abs(r.y + 0.29) - 0.015, 0.012) * (1.0 - smoothstep(0.02, 0.54, abs(r.x)));",
         "    float column = stroke(abs(r.x - 0.46), 0.012) * (1.0 - smoothstep(-0.34, 0.35, r.y));",
         "    float domeTop = fillShape(sdCircle(r - vec2(0.0, 0.19), 0.105 + bass * 0.02));",
-        "    float layerMask = clamp(pat + balcony * 0.85 + column * 0.65 + domeTop * 0.35, 0.0, 1.55);",
-        "    float light = (0.24 + depth * 0.58) * layerMask;",
+        "    float layerMask = clamp(pat + balcony * 0.85 + column * 0.65 + domeTop * 0.35, 0.0, 1.2);",
+        "    float light = (0.055 + depth * 0.18) * layerMask;",
         "    float idNoise = hash(id + fi);",
-        "    vec3 stone = mix(vec3(0.42, 0.35, 0.25), vec3(0.86, 0.78, 0.62), depth);",
-        "    stone = mix(stone, vec3(0.58, 0.70, 0.62), 0.18 + treble * 0.12 + idNoise * 0.08);",
-        "    color += stone * light * (0.62 + mid * 0.28);",
-        "    relief += layerMask * (0.12 + depth * 0.16);",
-        "    shadow += (1.0 - smoothstep(0.0, 0.65, r.y + 0.34)) * layerMask * (0.09 + depth * 0.08);",
+        "    vec3 stone = mix(vec3(0.20, 0.17, 0.12), vec3(0.56, 0.50, 0.38), depth);",
+        "    stone = mix(stone, vec3(0.34, 0.43, 0.36), 0.14 + treble * 0.06 + idNoise * 0.05);",
+        "    color += stone * light * (0.42 + mid * 0.12);",
+        "    relief += layerMask * (0.045 + depth * 0.06);",
+        "    shadow += (1.0 - smoothstep(0.0, 0.65, r.y + 0.34)) * layerMask * (0.13 + depth * 0.1);",
         "  }",
         "  float centerColumn = 1.0 - smoothstep(0.015, 0.04, abs(uv.x));",
         "  float pendant = 0.0;",
@@ -1256,14 +1565,90 @@
         "  pendant += stroke(sdCircle(sp - vec2(0.0, 0.18), 0.11 + bass * 0.025), 0.012);",
         "  pendant += stroke(sdCircle(sp - vec2(0.0, -0.04), 0.065 + mid * 0.02), 0.01);",
         "  pendant += stroke(abs(sp.x), 0.008) * (1.0 - smoothstep(0.0, 0.5, abs(sp.y)));",
-        "  color += vec3(0.82, 0.72, 0.54) * pendant * centerColumn * (0.8 + treble * 0.45);",
+        "  color += vec3(0.52, 0.45, 0.32) * pendant * centerColumn * (0.36 + treble * 0.18);",
         "  float vignette = 1.0 - smoothstep(0.18, 1.15, length(uv * vec2(0.78, 1.12)));",
-        "  color *= 0.74 + relief * 0.62;",
-        "  color -= shadow * vec3(0.22, 0.18, 0.13);",
-        "  color += vec3(0.12, 0.18, 0.16) * (1.0 - vignette) * 0.18;",
+        "  color *= 0.56 + relief * 0.42;",
+        "  color -= shadow * vec3(0.20, 0.17, 0.12);",
+        "  color += vec3(0.05, 0.07, 0.06) * (1.0 - vignette) * 0.12;",
         "  color = max(color, vec3(0.0));",
-        "  color *= vignette * (0.86 + overall * 0.28);",
-        "  gl_FragColor = vec4(color, 0.96);",
+        "  color *= vignette * (0.72 + overall * 0.12);",
+        "  color = color / (vec3(0.72) + color);",
+        "  color = pow(color, vec3(1.18));",
+        "  gl_FragColor = vec4(color, 0.92);",
+        "}"
+      ].join("\n");
+
+      var ORGANIC_BACKGROUND_FRAGMENT_SHADER = [
+        "precision highp float;",
+        "uniform vec2 resolution;",
+        "uniform float time;",
+        "uniform float bass;",
+        "uniform float mid;",
+        "uniform float treble;",
+        "uniform float overall;",
+        "uniform float hueShift;",
+        "uniform float variant;",
+        "uniform float baseHue;",
+        "uniform float flow;",
+        "uniform float complexity;",
+        "uniform float alpha;",
+        "varying vec2 vUv;",
+        "const float PI = 3.141592653589793;",
+        "float hash(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453123);}",
+        "float noise(vec2 p){vec2 i=floor(p);vec2 f=fract(p);f=f*f*(3.0-2.0*f);float a=hash(i);float b=hash(i+vec2(1.0,0.0));float c=hash(i+vec2(0.0,1.0));float d=hash(i+vec2(1.0,1.0));return mix(mix(a,b,f.x),mix(c,d,f.x),f.y);}",
+        "float fbm(vec2 p){float v=0.0;float a=0.5;mat2 r=mat2(0.82,-0.57,0.57,0.82);for(int i=0;i<5;i++){v+=a*noise(p);p=r*p*2.03+0.17;a*=0.52;}return v;}",
+        "vec2 rot(vec2 p,float a){float c=cos(a);float s=sin(a);return vec2(c*p.x-s*p.y,s*p.x+c*p.y);}",
+        "vec3 palette(float t){vec3 a=vec3(0.5);vec3 b=vec3(0.5);vec3 c=vec3(1.0);vec3 d=vec3(baseHue+hueShift*0.16,baseHue*0.47+0.18,baseHue*0.31+0.42);return a+b*cos(6.28318*(c*t+d));}",
+        "float cellField(vec2 p,float seed){vec2 g=floor(p);vec2 f=fract(p);float d=10.0;for(int y=-1;y<=1;y++){for(int x=-1;x<=1;x++){vec2 o=vec2(float(x),float(y));vec2 r=vec2(hash(g+o+vec2(seed)),hash(g+o+vec2(seed+5.7)));r=vec2(0.5)+0.42*sin(vec2(time*(0.28+flow*0.6)+seed)+6.28318*r);vec2 diff=o+r-f;d=min(d,dot(diff,diff));}}return sqrt(d);}",
+        "float juliaField(vec2 p,float seed){vec2 z=p;vec2 c=vec2(sin(seed*1.7+time*0.05)*0.42+mid*0.08,cos(seed*2.1-time*0.04)*0.36+bass*0.08);float acc=0.0;for(int i=0;i<8;i++){z=vec2(z.x*z.x-z.y*z.y,2.0*z.x*z.y)+c;float m=dot(z,z);acc+=exp(-m*1.7);z+=0.035*sin(z.yx*3.0+vec2(time*0.23+treble));}return acc/8.0;}",
+        "float glyphField(vec2 p,float seed){vec2 q=p*vec2(1.25,0.86);float a=atan(q.y,q.x);float r=length(q);float spokes=5.0+mod(seed,7.0)+mid*5.0;float g=abs(sin(a*spokes+fbm(q*2.0+vec2(seed))*3.0+time*(0.3+flow)));float rings=abs(sin(r*(9.0+complexity*8.0)-time*(0.7+flow)+bass*3.0));return pow(1.0-min(g,rings),2.0);}",
+        "void main(){",
+        "  vec2 uv=(gl_FragCoord.xy*2.0-resolution.xy)/min(resolution.x,resolution.y);",
+        "  float seed=variant*13.17+1.0;",
+        "  float family=mod(variant,5.0);",
+        "  float audio=overall*0.7+bass*0.2+treble*0.1;",
+        "  float t=time*(0.12+flow*0.34)+seed;",
+        "  vec2 p=uv;",
+        "  p=rot(p,sin(t*0.31+seed)*0.22+mid*0.12);",
+        "  vec2 warp=vec2(fbm(p*(1.4+complexity*1.1)+vec2(t,seed)),fbm(p*(1.7+complexity)+vec2(seed,-t)));",
+        "  p+=(warp-vec2(0.5))*(0.55+audio*0.72);",
+        "  p+=vec2(sin(p.y*2.7+t)*0.06,cos(p.x*2.4-t)*0.06)*(1.0+mid*2.0);",
+        "  float f=0.0;",
+        "  float edge=0.0;",
+        "  if(family<0.5){",
+        "    float c=cellField(p*(3.0+complexity*2.4)+warp*1.8,seed);",
+        "    edge=1.0-smoothstep(0.02,0.16+treble*0.08,c);",
+        "    f=edge+fbm(p*5.0+vec2(t))*0.45;",
+        "  }else if(family<1.5){",
+        "    f=juliaField(p*(1.25+complexity*0.35)+warp*0.42,seed);",
+        "    edge=pow(f,1.6);",
+        "  }else if(family<2.5){",
+        "    float veins=abs(sin((p.x+fbm(p*2.1+vec2(seed)))*8.0+sin(p.y*5.0+t)*2.0));",
+        "    edge=pow(1.0-veins,3.2)*(0.7+treble*1.7);",
+        "    f=edge+fbm(p*4.4-vec2(t))*0.55;",
+        "  }else if(family<3.5){",
+        "    f=glyphField(p,seed)+fbm(rot(p,0.7)*3.2+vec2(t))*0.38;",
+        "    edge=smoothstep(0.52,0.96,f);",
+        "  }else{",
+        "    float membrane=sin((p.x*p.x-p.y*p.y)*7.0+fbm(p*3.0+vec2(t))*5.5+time*(0.4+flow));",
+        "    float foam=cellField(p*(5.5+complexity*3.0)+vec2(membrane),seed);",
+        "    edge=1.0-smoothstep(0.01,0.12+mid*0.05,foam)+pow(abs(membrane),5.0)*0.5;",
+        "    f=edge+fbm(p*6.0+vec2(seed))*0.35;",
+        "  }",
+        "  float pulses=0.5+0.5*sin(f*8.0+time*(0.45+flow*0.8)+bass*4.0+variant);",
+        "  float micro=fbm(p*(10.0+complexity*9.0)+vec2(t*1.7,-t*1.1));",
+        "  float filaments=pow(1.0-abs(sin((p.x+p.y+micro)*18.0+time*(0.8+treble*2.4))),7.0)*(0.18+treble*0.82);",
+        "  float intensity=clamp(f*0.8+edge*0.8+pulses*0.18+filaments,0.0,1.65);",
+        "  vec3 color=palette(baseHue+f*0.32+micro*0.18+pulses*0.08+variant*0.027);",
+        "  vec3 deep=palette(baseHue*0.4+variant*0.031)*0.09;",
+        "  color=mix(deep,color,intensity);",
+        "  color+=palette(baseHue+0.23+treble*0.12)*filaments*0.7;",
+        "  color*=0.42+intensity*(0.72+overall*0.4);",
+        "  float vignette=1.0-smoothstep(0.8,1.55,length(uv*vec2(0.86,1.05)));",
+        "  color*=0.62+vignette*0.56;",
+        "  color=color/(vec3(0.74)+color);",
+        "  color=pow(max(color,0.0),vec3(0.92));",
+        "  gl_FragColor=vec4(color,(0.78+overall*0.12)*alpha);",
         "}"
       ].join("\n");
 
@@ -1411,6 +1796,7 @@
         canvas: document.getElementById("stage"),
         panel: document.getElementById("controlPanel"),
         header: document.getElementById("panelHeader"),
+        popout: document.getElementById("popoutButton"),
         minimize: document.getElementById("minimizeButton"),
         micButton: document.getElementById("micButton"),
         gamepadButton: document.getElementById("gamepadButton"),
@@ -1422,10 +1808,18 @@
         videoElement: document.getElementById("videoElement"),
         gamepadStatus: document.getElementById("gamepadStatus"),
         midiStatus: document.getElementById("midiStatus"),
+        midiLearnTarget: document.getElementById("midiLearnTarget"),
+        midiLearnButton: document.getElementById("midiLearnButton"),
+        midiClearButton: document.getElementById("midiClearButton"),
+        midiLearnStatus: document.getElementById("midiLearnStatus"),
+        midiLastInput: document.getElementById("midiLastInput"),
+        midiMapList: document.getElementById("midiMapList"),
         aiImagePrompt: document.getElementById("aiImagePrompt"),
         aiImageGenerate: document.getElementById("aiImageGenerate"),
         aiImageClear: document.getElementById("aiImageClear"),
         modeGrid: document.getElementById("modeGrid"),
+        modeBandToggle: document.getElementById("modeBandToggle"),
+        modeBandPanel: document.getElementById("modeBandPanel"),
         modeBandGrid: document.getElementById("modeBandGrid"),
         statusChip: document.getElementById("statusChip"),
         statusTitle: document.getElementById("statusTitle"),
@@ -1505,11 +1899,15 @@
         camera: null,
         root: null,
         atmosphere: null,
+        controlWindow: null,
         glowTexture: null,
         sparkTexture: null,
         generatedImageTexture: null,
         clock: null,
         modes: Object.create(null),
+        ui: {
+          modeBandsOpen: false
+        },
         audioContext: null,
         analyser: null,
         outputGain: null,
@@ -1533,6 +1931,11 @@
         midiNoteMap: Object.create(null),
         midiCcIndex: 0,
         midiNoteIndex: 0,
+        midiInputCount: 0,
+        midiOutputCount: 0,
+        midiLearning: false,
+        midiLearnTarget: "cc:particleCount",
+        midiLastInput: null,
         controllerBoosts: {
           glitch: 0,
           grunge: 0,
@@ -1618,14 +2021,21 @@
 
         state.clock = new THREE.Clock();
 
+        loadStoredMidiMappings();
+        loadStoredModeSettings();
+        loadUiState();
+        installControlWindowApi();
+        createMidiMapControls();
         createModeControls();
         createModeBandControls();
+        syncModeBandsAccordion();
         bindControls();
         syncControlsFromConfig();
         if (config.autoVjEnabled) {
           startAutoVj();
         }
         syncModes();
+        refreshMidiModeLeds();
         window.addEventListener("resize", resize);
 
         setStatus("Ready", "No audio source connected", "idle");
@@ -1821,6 +2231,56 @@
         state.scene.add(stars);
       }
 
+      function createMidiMapControls() {
+        if (!els.midiLearnTarget || !els.midiMapList) {
+          return;
+        }
+
+        els.midiLearnTarget.innerHTML = "";
+        MIDI_TARGETS.forEach(function (target) {
+          var option = document.createElement("option");
+          option.value = target.id;
+          option.textContent = (target.type === "cc" ? "Knob/Fader - " : "Button - ") + target.label;
+          els.midiLearnTarget.appendChild(option);
+        });
+        els.midiLearnTarget.value = state.midiLearnTarget;
+        renderMidiMapList();
+      }
+
+      function renderMidiMapList() {
+        if (!els.midiMapList) {
+          return;
+        }
+
+        els.midiMapList.innerHTML = "";
+        MIDI_TARGETS.forEach(function (target) {
+          var row = document.createElement("div");
+          row.className = "midi-map-row";
+          if (state.midiLearning && state.midiLearnTarget === target.id) {
+            row.classList.add("is-learning");
+          }
+
+          var name = document.createElement("span");
+          name.className = "midi-map-target";
+          name.textContent = target.label;
+
+          var source = document.createElement("span");
+          source.className = "midi-map-source";
+          source.textContent = getMidiMappedSources(target.id).join(", ") || "Not set";
+
+          var clear = document.createElement("button");
+          clear.type = "button";
+          clear.textContent = "x";
+          clear.title = "Clear " + target.label;
+          clear.setAttribute("data-midi-clear-target", target.id);
+
+          row.appendChild(name);
+          row.appendChild(source);
+          row.appendChild(clear);
+          els.midiMapList.appendChild(row);
+        });
+      }
+
       function createModeControls() {
         if (!els.modeGrid) {
           return;
@@ -1896,6 +2356,42 @@
         });
       }
 
+      function loadUiState() {
+        try {
+          var saved = JSON.parse(localStorage.getItem(UI_STATE_KEY) || "{}");
+          state.ui.modeBandsOpen = !!saved.modeBandsOpen;
+        } catch (error) {
+          state.ui.modeBandsOpen = false;
+        }
+      }
+
+      function saveUiState() {
+        try {
+          localStorage.setItem(UI_STATE_KEY, JSON.stringify({
+            modeBandsOpen: state.ui.modeBandsOpen
+          }));
+        } catch (error) {
+          // UI state is optional; the visualizer should keep running if storage is full.
+        }
+      }
+
+      function syncModeBandsAccordion() {
+        if (!els.modeBandToggle || !els.modeBandPanel) {
+          return;
+        }
+        var isOpen = !!state.ui.modeBandsOpen;
+        els.modeBandToggle.setAttribute("aria-expanded", isOpen ? "true" : "false");
+        els.modeBandPanel.hidden = !isOpen;
+      }
+
+      function setModeBandsOpen(open, persist) {
+        state.ui.modeBandsOpen = !!open;
+        syncModeBandsAccordion();
+        if (persist !== false) {
+          saveUiState();
+        }
+      }
+
       function createDefaultModeBands() {
         var bands = {};
         MODE_IDS.forEach(function (id) {
@@ -1966,6 +2462,316 @@
         };
       }
 
+      function installControlWindowApi() {
+        window.VJ_CYMATICS_REMOTE = {
+          getSnapshot: getControlWindowSnapshot,
+          setRange: applyRemoteRange,
+          setToggle: applyRemoteToggle,
+          setMode: applyRemoteMode,
+          setModeBand: applyRemoteModeBand,
+          setModeBandsOpen: setModeBandsOpen,
+          setMidiLearnTarget: applyRemoteMidiLearnTarget,
+          startMidiLearn: applyRemoteMidiLearn,
+          clearMidiTarget: clearMidiTargetMapping,
+          command: handleRemoteCommand,
+          loadAudioFile: loadAudioFileObject,
+          loadVideoFile: loadVideoFileObject
+        };
+      }
+
+      function getControlWindowSnapshot() {
+        return {
+          config: JSON.parse(JSON.stringify(config)),
+          levels: {
+            bass: state.levels.bass,
+            mid: state.levels.mid,
+            treble: state.levels.treble,
+            overall: state.levels.overall
+          },
+          status: {
+            title: els.statusTitle.textContent,
+            text: els.statusText.textContent
+          },
+          ui: {
+            modeBandsOpen: state.ui.modeBandsOpen
+          },
+          modes: MODE_IDS.map(function (id) {
+            return {
+              id: id,
+              label: MODE_LABELS[id] || id,
+              enabled: config.enabledModes.indexOf(id) !== -1
+            };
+          }),
+          modeBands: normalizeModeBands(config.modeBands),
+          bandIds: BAND_IDS.slice(),
+          bandLabels: Object.assign({}, BAND_LABELS),
+          rangeControls: REMOTE_RANGE_CONTROLS.map(function (item) {
+            return Object.assign({}, item, {
+              value: item.key === "videoWidth" ? config.videoWidth : config[item.key]
+            });
+          }),
+          toggleControls: REMOTE_TOGGLE_CONTROLS.map(function (item) {
+            return Object.assign({}, item, {
+              checked: !!config[item.key]
+            });
+          }),
+          midiTargets: MIDI_TARGETS.map(function (item) {
+            return Object.assign({}, item);
+          }),
+          midiMappings: Object.assign({}, config.midiMappings || {}),
+          midiLearning: state.midiLearning,
+          midiLearnTarget: state.midiLearnTarget,
+          midiStatus: els.midiStatus.textContent,
+          midiLearnStatus: els.midiLearnStatus.textContent,
+          midiLastInput: els.midiLastInput.textContent
+        };
+      }
+
+      function getRemoteRangeDef(key) {
+        for (var i = 0; i < REMOTE_RANGE_CONTROLS.length; i += 1) {
+          if (REMOTE_RANGE_CONTROLS[i].key === key) {
+            return REMOTE_RANGE_CONTROLS[i];
+          }
+        }
+        return null;
+      }
+
+      function formatRemoteValue(key, value) {
+        var def = getRemoteRangeDef(key);
+        if (!def) {
+          return String(value);
+        }
+        return def.decimals === 0 ? String(Math.round(value)) : Number(value).toFixed(def.decimals);
+      }
+
+      function getRemoteRangeCallback(key) {
+        if (key === "particleCount") {
+          return scheduleParticleRebuild;
+        }
+        if (key === "stardustCount") {
+          return scheduleStardustRebuild;
+        }
+        if (key === "particleSize") {
+          return updatePointSizes;
+        }
+        if (key === "manualRotationX" || key === "manualRotationY") {
+          return updateManualRotationTarget;
+        }
+        if (key === "kaleidoscopeSides") {
+          return enableKaleidoscope;
+        }
+        if (key === "mirrorVerticalPosition") {
+          return enableMirrorVertical;
+        }
+        if (key === "mirrorHorizontalPosition") {
+          return enableMirrorHorizontal;
+        }
+        return null;
+      }
+
+      function applyRemoteRange(key, value) {
+        var def = getRemoteRangeDef(key);
+        if (!def) {
+          return;
+        }
+        var next = clamp(Number(value), def.min, def.max);
+        if (def.decimals === 0) {
+          next = Math.round(next);
+        }
+
+        if (key === "videoWidth") {
+          config.videoWidth = next;
+          config.videoHeight = Math.round(next * 0.75);
+          els.videoResolution.value = String(next);
+          els.videoResolutionValue.textContent = formatRemoteValue(key, next);
+          updateVideoResolution();
+          return;
+        }
+
+        var input = els[key];
+        var output = els[key + "Value"];
+        if (!input || !output) {
+          return;
+        }
+        setRangeControl(input, output, key, next, def.decimals, function (formattedValue) {
+          return formatRemoteValue(key, formattedValue);
+        }, getRemoteRangeCallback(key));
+      }
+
+      function applyRemoteToggle(key, checked) {
+        checked = !!checked;
+        if (key === "autoRotate") {
+          config.autoRotate = checked;
+          els.autoRotate.checked = checked;
+          updateRotationControls();
+          updateManualRotationTarget();
+          return;
+        }
+        if (key === "autoVjEnabled") {
+          setToggleControl(els.autoVjEnabled, "autoVjEnabled", checked, function (isChecked) {
+            if (isChecked) {
+              startAutoVj();
+            } else {
+              stopAutoVj();
+            }
+          });
+          return;
+        }
+        if (key === "kaleidoscopeReactive") {
+          setToggleControl(els.kaleidoscopeReactive, "kaleidoscopeReactive", checked, function (isChecked) {
+            if (isChecked) {
+              enableKaleidoscope();
+            }
+          });
+          return;
+        }
+        if (key === "mirrorVerticalReactive") {
+          setToggleControl(els.mirrorVerticalReactive, "mirrorVerticalReactive", checked, function (isChecked) {
+            if (isChecked) {
+              enableMirrorVertical();
+            }
+          });
+          return;
+        }
+        if (key === "mirrorHorizontalReactive") {
+          setToggleControl(els.mirrorHorizontalReactive, "mirrorHorizontalReactive", checked, function (isChecked) {
+            if (isChecked) {
+              enableMirrorHorizontal();
+            }
+          });
+          return;
+        }
+
+        if (els[key]) {
+          setToggleControl(els[key], key, checked);
+        }
+      }
+
+      function applyRemoteMode(id, enabled) {
+        setModeEnabled(id, !!enabled);
+        syncModes();
+      }
+
+      function applyRemoteModeBand(id, band, enabled) {
+        if (MODE_IDS.indexOf(id) === -1 || BAND_IDS.indexOf(band) === -1) {
+          return;
+        }
+        ensureModeBandConfig(id);
+        config.modeBands[id][band] = !!enabled;
+        document.querySelectorAll("[data-mode-band='" + id + "'][data-band='" + band + "']").forEach(function (checkbox) {
+          checkbox.checked = !!enabled;
+        });
+        saveModeSettings();
+      }
+
+      function applyRemoteMidiLearnTarget(targetId) {
+        if (!getMidiTargetDef(targetId)) {
+          return;
+        }
+        state.midiLearnTarget = targetId;
+        els.midiLearnTarget.value = targetId;
+        if (state.midiLearning) {
+          els.midiLearnStatus.textContent = "Learning " + getMidiTargetLabel(targetId);
+        }
+        renderMidiMapList();
+      }
+
+      function applyRemoteMidiLearn(targetId) {
+        if (targetId) {
+          applyRemoteMidiLearnTarget(targetId);
+        }
+        startMidiLearn();
+        startMidiControl();
+      }
+
+      function handleRemoteCommand(command) {
+        if (command === "mic") {
+          startMicrophone();
+        } else if (command === "midi") {
+          startMidiControl();
+        } else if (command === "gamepad") {
+          startGamepadControl();
+        } else if (command === "webcam") {
+          startWebcam();
+        } else if (command === "save") {
+          savePreset();
+        } else if (command === "load") {
+          loadPreset();
+        } else if (command === "download") {
+          downloadPreset();
+        } else if (command === "hidePanel") {
+          els.panel.style.display = "none";
+        } else if (command === "showPanel") {
+          els.panel.style.display = "";
+        }
+      }
+
+      function openControlWindow() {
+        if (state.controlWindow && !state.controlWindow.closed) {
+          els.panel.style.display = "none";
+          state.controlWindow.focus();
+          return;
+        }
+
+        var popup = window.open("", "vj-cymatics-controls", "width=460,height=820,resizable=yes,scrollbars=yes");
+        if (!popup) {
+          setStatus("Popup blocked", "Allow popups for controls", "error");
+          return;
+        }
+
+        state.controlWindow = popup;
+        popup.document.open();
+        popup.document.write(buildControlWindowHtml());
+        popup.document.close();
+        els.panel.style.display = "none";
+        popup.focus();
+        setStatus("Control window", "Controls popped out", "live");
+      }
+
+      function buildControlWindowHtml() {
+        return [
+          "<!doctype html>",
+          "<html lang=\"en\">",
+          "<head>",
+          "<meta charset=\"utf-8\">",
+          "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">",
+          "<title>VJ Controls</title>",
+          "<style>",
+          ":root{color-scheme:dark;--bg:#080a0f;--panel:#11151d;--line:rgba(255,255,255,.13);--text:#f6f8fb;--muted:#9aa3b2;--cyan:#35e6d4;--hot:#ff4f9a;font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}",
+          "*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-size:12px}header{position:sticky;top:0;z-index:2;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 14px;background:rgba(17,21,29,.96);border-bottom:1px solid var(--line)}h1{margin:0;font-size:13px;text-transform:uppercase}main{display:grid;gap:10px;padding:10px}section{border:1px solid var(--line);border-radius:8px;background:rgba(255,255,255,.04);padding:10px}h2{margin:0 0 9px;font-size:11px;text-transform:uppercase;color:#dce5f0}.accordion{width:100%;min-height:32px;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:0;border:0;border-radius:0;background:transparent;color:#dce5f0;text-align:left;text-transform:uppercase}.accordion span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:11px;font-weight:800}.accordion i{width:22px;height:22px;display:grid;place-items:center;border:1px solid var(--line);border-radius:7px;background:rgba(255,255,255,.06);font-style:normal}.accordion i:before{content:\"\";width:7px;height:7px;border-right:2px solid currentColor;border-bottom:2px solid currentColor;transform:translateY(-2px) rotate(45deg)}.accordion[aria-expanded=\"true\"] i:before{transform:translateY(2px) rotate(225deg)}.accordion-panel{margin-top:9px}.sub{color:var(--muted);font-size:11px}.buttons{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}.buttons.three{grid-template-columns:repeat(3,minmax(0,1fr))}button,.file{min-height:34px;display:flex;align-items:center;justify-content:center;border:1px solid var(--line);border-radius:7px;background:rgba(255,255,255,.06);color:var(--text);font:inherit;font-weight:750;cursor:pointer}.file input{display:none}button:hover,.file:hover{border-color:rgba(255,255,255,.28)}.ranges{display:grid;gap:10px}.range{display:grid;grid-template-columns:1fr auto;gap:5px}.range label{font-weight:760}.range output{color:#cfd7e4}.range input{grid-column:1/-1;width:100%;accent-color:var(--cyan)}.toggles{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}.check,.mode,.band{min-height:30px;display:flex;align-items:center;gap:8px;padding:0 8px;border:1px solid var(--line);border-radius:7px;background:rgba(255,255,255,.045);font-weight:760}.check input,.mode input,.band input{width:15px;height:15px;accent-color:var(--cyan)}.mode-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}.band-grid{display:grid;gap:5px}.band-row{display:grid;grid-template-columns:minmax(0,1fr) repeat(3,32px);gap:5px;align-items:center}.band-row.head{color:var(--muted);font-weight:800;text-transform:uppercase}.band-name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:760}.band{justify-content:center;padding:0}.meters{display:grid;gap:5px;margin-top:8px}.meter{display:grid;grid-template-columns:48px 1fr;gap:7px;align-items:center;color:var(--muted);font-size:10px;text-transform:uppercase}.bar{height:5px;border-radius:999px;background:rgba(255,255,255,.08);overflow:hidden}.bar span{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--cyan),#9bff78,#ffbe55,var(--hot))}.spacer{height:1px;background:var(--line);margin:9px 0}@media(max-width:420px){.mode-grid,.toggles{grid-template-columns:1fr}}",
+          "select{width:100%;min-height:34px;border:1px solid var(--line);border-radius:7px;background:rgba(255,255,255,.06);color:var(--text);padding:0 9px;font:inherit;font-weight:750;outline:none}.midi-actions{display:grid;grid-template-columns:minmax(0,1fr) 72px 64px;gap:7px}.midi-map{max-height:190px;display:grid;gap:5px;overflow-y:auto;padding-right:2px}.midi-row{min-height:30px;display:grid;grid-template-columns:minmax(0,1fr) minmax(82px,auto) 28px;align-items:center;gap:6px;padding:4px 5px 4px 8px;border:1px solid var(--line);border-radius:7px;background:rgba(255,255,255,.04)}.midi-row.is-learning{border-color:rgba(53,230,212,.72);background:rgba(53,230,212,.1)}.midi-name,.midi-source{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.midi-name{font-size:11px;font-weight:760}.midi-source{color:var(--muted);font-size:10px;font-variant-numeric:tabular-nums;text-align:right}.midi-row button{min-height:24px;padding:0;border-radius:6px}",
+          "</style>",
+          "</head>",
+          "<body>",
+          "<header><div><h1>VJ Controls</h1><div class=\"sub\" id=\"remoteStatus\">Connecting</div></div><button data-command=\"hidePanel\" title=\"Hide main menu\">Hide Main</button></header>",
+          "<main id=\"app\"></main>",
+          "<script>",
+          "(function(){",
+          "var api=window.opener&&window.opener.VJ_CYMATICS_REMOTE;",
+          "var last=null;",
+          "function esc(v){return String(v==null?'':v).replace(/[&<>\\\"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','\\\"':'&quot;'}[c];});}",
+          "function fmt(def,value){var n=Number(value)||0;return def.decimals===0?String(Math.round(n)):n.toFixed(def.decimals);}",
+          "function items(data,type,section){return data[type].filter(function(item){return item.section===section;});}",
+          "function ranges(data,section){var list=items(data,'rangeControls',section);if(!list.length){return '';}var html=['<div class=\"ranges\">'];list.forEach(function(def){var value=data.config[def.key];if(def.key==='videoWidth'){value=data.config.videoWidth;}html.push('<div class=\"range\"><label>'+esc(def.label)+'</label><output data-output=\"'+esc(def.key)+'\">'+esc(fmt(def,value))+'</output><input data-range=\"'+esc(def.key)+'\" type=\"range\" min=\"'+def.min+'\" max=\"'+def.max+'\" step=\"'+def.step+'\" value=\"'+esc(value)+'\"></div>');});html.push('</div>');return html.join('');}",
+          "function toggles(data,section){var list=items(data,'toggleControls',section);if(!list.length){return '';}var html=['<div class=\"toggles\">'];list.forEach(function(def){html.push('<label class=\"check\"><input data-toggle=\"'+esc(def.key)+'\" type=\"checkbox\" '+(data.config[def.key]?'checked':'')+'><span>'+esc(def.label)+'</span></label>');});html.push('</div>');return html.join('');}",
+          "function midiSourceName(key){var p=String(key).split(':');if(p.length!==3){return key;}return (p[0]==='cc'?'CC':'Note')+' ch '+(Number(p[1])+1)+' #'+p[2];}",
+          "function midiSources(data,targetId){var out=[];Object.keys(data.midiMappings||{}).forEach(function(key){if(data.midiMappings[key]===targetId){out.push(midiSourceName(key));}});return out.join(', ')||'Not set';}",
+          "function midiSection(data){var html=['<section><h2>MIDI Mapping</h2><div class=\"buttons\"><button data-command=\"midi\">MIDI</button><button data-midi-learn=\"1\">Learn</button></div><div class=\"spacer\"></div><div class=\"midi-actions\"><select data-midi-target>'];data.midiTargets.forEach(function(target){html.push('<option value=\"'+esc(target.id)+'\" '+(target.id===data.midiLearnTarget?'selected':'')+'>'+(target.type==='cc'?'Knob/Fader - ':'Button - ')+esc(target.label)+'</option>');});html.push('</select><button data-midi-learn=\"1\">Learn</button><button data-midi-clear-selected=\"1\">Clear</button></div><div class=\"spacer\"></div><div class=\"sub\"><div id=\"midiRemoteStatus\">'+esc(data.midiStatus)+'</div><div id=\"midiRemoteLearn\">'+esc(data.midiLearnStatus)+'</div><div id=\"midiRemoteLast\">'+esc(data.midiLastInput)+'</div></div><div class=\"spacer\"></div><div class=\"midi-map\">');data.midiTargets.forEach(function(target){html.push('<div class=\"midi-row '+(data.midiLearning&&data.midiLearnTarget===target.id?'is-learning':'')+'\" data-midi-row=\"'+esc(target.id)+'\"><span class=\"midi-name\">'+esc(target.label)+'</span><span class=\"midi-source\" data-midi-source-for=\"'+esc(target.id)+'\">'+esc(midiSources(data,target.id))+'</span><button data-midi-clear-target=\"'+esc(target.id)+'\">x</button></div>');});html.push('</div></section>');return html.join('');}",
+          "function modeBandsSection(data){var open=!!(data.ui&&data.ui.modeBandsOpen);var html=['<section><button class=\"accordion\" data-accordion=\"modeBands\" type=\"button\" aria-expanded=\"'+(open?'true':'false')+'\"><span>Mode Bands</span><i aria-hidden=\"true\"></i></button>'];if(open){html.push('<div class=\"accordion-panel\"><div class=\"band-grid\"><div class=\"band-row head\"><span>Mode</span><span>L</span><span>M</span><span>H</span></div>');data.modes.forEach(function(mode){html.push('<div class=\"band-row\"><span class=\"band-name\">'+esc(mode.label)+'</span>');data.bandIds.forEach(function(band){var checked=!data.modeBands[mode.id]||data.modeBands[mode.id][band]!==false;html.push('<label class=\"band\" title=\"'+esc(mode.label+' '+band)+'\"><input data-mode-band=\"'+esc(mode.id)+'\" data-band=\"'+esc(band)+'\" type=\"checkbox\" '+(checked?'checked':'')+'></label>');});html.push('</div>');});html.push('</div></div>');}html.push('</section>');return html.join('');}",
+          "function render(){if(!api){document.getElementById('app').innerHTML='<section>Parent window unavailable.</section>';return;}var data=api.getSnapshot();last=data;var html=[];document.getElementById('remoteStatus').textContent=data.status.title+' '+data.status.text;html.push('<section><h2>Audio Input</h2><div class=\"buttons\"><button data-command=\"mic\">Mic</button><label class=\"file\"><input data-file=\"audio\" type=\"file\" accept=\"audio/mpeg,audio/wav,audio/ogg,audio/*\">Audio File</label></div><div class=\"meters\"><div class=\"meter\"><span>Bass</span><div class=\"bar\"><span data-meter=\"bass\"></span></div></div><div class=\"meter\"><span>Mid</span><div class=\"bar\"><span data-meter=\"mid\"></span></div></div><div class=\"meter\"><span>Treble</span><div class=\"bar\"><span data-meter=\"treble\"></span></div></div></div>'+ranges(data,'Audio')+'</section>');html.push('<section><h2>Auto VJ</h2>'+toggles(data,'Auto VJ')+ranges(data,'Auto VJ')+'</section>');html.push(midiSection(data));html.push('<section><h2>Visualization Modes</h2><div class=\"mode-grid\">');data.modes.forEach(function(mode){html.push('<label class=\"mode\"><input data-mode=\"'+esc(mode.id)+'\" type=\"checkbox\" '+(mode.enabled?'checked':'')+'><span>'+esc(mode.label)+'</span></label>');});html.push('</div></section>');html.push(modeBandsSection(data));html.push('<section><h2>Animation</h2>'+toggles(data,'Animation')+ranges(data,'Animation')+'</section>');html.push('<section><h2>Look</h2>'+ranges(data,'Look')+'</section>');html.push('<section><h2>Effects</h2>'+toggles(data,'Effects')+ranges(data,'Effects')+'</section>');html.push('<section><h2>Video Input</h2><div class=\"buttons\"><button data-command=\"webcam\">Webcam</button><label class=\"file\"><input data-file=\"video\" type=\"file\" accept=\"video/*\">Video File</label></div><div class=\"spacer\"></div>'+ranges(data,'Video')+'</section>');html.push('<section><h2>Presets & Window</h2><div class=\"buttons three\"><button data-command=\"save\">Save</button><button data-command=\"load\">Load</button><button data-command=\"download\">JSON</button></div><div class=\"spacer\"></div><div class=\"buttons\"><button data-command=\"showPanel\">Show Main</button><button data-command=\"hidePanel\">Hide Main</button></div></section>');document.getElementById('app').innerHTML=html.join('');refresh();}",
+          "function refresh(){if(!api){return;}var data=api.getSnapshot();if(last&&last.ui&&data.ui&&last.ui.modeBandsOpen!==data.ui.modeBandsOpen){render();return;}last=data;document.getElementById('remoteStatus').textContent=data.status.title+' '+data.status.text;['bass','mid','treble'].forEach(function(k){var el=document.querySelector('[data-meter=\"'+k+'\"]');if(el){el.style.width=Math.round((data.levels[k]||0)*100)+'%';}});var status=document.getElementById('midiRemoteStatus');if(status){status.textContent=data.midiStatus;}var learn=document.getElementById('midiRemoteLearn');if(learn){learn.textContent=data.midiLearnStatus;}var lastInput=document.getElementById('midiRemoteLast');if(lastInput){lastInput.textContent=data.midiLastInput;}var midiTarget=document.querySelector('[data-midi-target]');if(midiTarget&&document.activeElement!==midiTarget){midiTarget.value=data.midiLearnTarget;}data.midiTargets.forEach(function(target){var source=document.querySelector('[data-midi-source-for=\"'+target.id+'\"]');if(source){source.textContent=midiSources(data,target.id);}var row=document.querySelector('[data-midi-row=\"'+target.id+'\"]');if(row){row.classList.toggle('is-learning',data.midiLearning&&data.midiLearnTarget===target.id);}});if(document.activeElement&&document.activeElement.matches('[data-range]')){return;}data.rangeControls.forEach(function(def){var input=document.querySelector('[data-range=\"'+def.key+'\"]');var out=document.querySelector('[data-output=\"'+def.key+'\"]');var value=def.key==='videoWidth'?data.config.videoWidth:data.config[def.key];if(input){input.value=value;}if(out){out.textContent=fmt(def,value);}});data.toggleControls.forEach(function(def){var input=document.querySelector('[data-toggle=\"'+def.key+'\"]');if(input){input.checked=!!data.config[def.key];}});data.modes.forEach(function(mode){var input=document.querySelector('[data-mode=\"'+mode.id+'\"]');if(input){input.checked=mode.enabled;}data.bandIds.forEach(function(band){var bandInput=document.querySelector('[data-mode-band=\"'+mode.id+'\"][data-band=\"'+band+'\"]');if(bandInput){bandInput.checked=!data.modeBands[mode.id]||data.modeBands[mode.id][band]!==false;}});});}",
+          "document.addEventListener('input',function(event){var key=event.target.getAttribute('data-range');if(!key||!api){return;}api.setRange(key,Number(event.target.value));var data=api.getSnapshot();var def=data.rangeControls.filter(function(item){return item.key===key;})[0];var out=document.querySelector('[data-output=\"'+key+'\"]');if(out&&def){out.textContent=fmt(def,event.target.value);}});",
+          "document.addEventListener('change',function(event){if(!api){return;}var mode=event.target.getAttribute('data-mode');var toggle=event.target.getAttribute('data-toggle');var bandMode=event.target.getAttribute('data-mode-band');var midiTarget=event.target.getAttribute('data-midi-target')!==null;var fileKind=event.target.getAttribute('data-file');if(mode){api.setMode(mode,event.target.checked);}else if(toggle){api.setToggle(toggle,event.target.checked);}else if(bandMode){api.setModeBand(bandMode,event.target.getAttribute('data-band'),event.target.checked);}else if(midiTarget){api.setMidiLearnTarget(event.target.value);refresh();}else if(fileKind&&event.target.files&&event.target.files[0]){if(fileKind==='audio'){api.loadAudioFile(event.target.files[0]);}else{api.loadVideoFile(event.target.files[0]);}event.target.value='';}});",
+          "document.addEventListener('click',function(event){if(!api){return;}var accordion=event.target.closest('[data-accordion=\"modeBands\"]');if(accordion){api.setModeBandsOpen(accordion.getAttribute('aria-expanded')!=='true');render();return;}var clear=event.target.closest('[data-midi-clear-target]');if(clear){api.clearMidiTarget(clear.getAttribute('data-midi-clear-target'));refresh();return;}var selectedClear=event.target.closest('[data-midi-clear-selected]');if(selectedClear){var select=document.querySelector('[data-midi-target]');if(select){api.clearMidiTarget(select.value);refresh();}return;}var learn=event.target.closest('[data-midi-learn]');if(learn){var target=document.querySelector('[data-midi-target]');api.startMidiLearn(target?target.value:null);refresh();return;}var button=event.target.closest('[data-command]');if(!button){return;}api.command(button.getAttribute('data-command'));});",
+          "window.addEventListener('beforeunload',function(){try{api.command('showPanel');}catch(error){}});",
+          "render();window.setInterval(refresh,450);",
+          "}());",
+          "<\/script>",
+          "</body>",
+          "</html>"
+        ].join("\n");
+      }
+
       function bindControls() {
         els.minimize.addEventListener("click", function () {
           els.panel.classList.toggle("is-minimized");
@@ -1975,6 +2781,14 @@
             els.panel.classList.contains("is-minimized") ? "Maximize panel" : "Minimize panel"
           );
         });
+
+        els.popout.addEventListener("click", openControlWindow);
+
+        if (els.modeBandToggle) {
+          els.modeBandToggle.addEventListener("click", function () {
+            setModeBandsOpen(!state.ui.modeBandsOpen);
+          });
+        }
 
         bindPanelDrag();
 
@@ -1991,6 +2805,7 @@
               });
             }
             syncModes();
+            saveModeSettings();
           });
         });
 
@@ -2000,6 +2815,7 @@
             var band = checkbox.getAttribute("data-band");
             ensureModeBandConfig(modeId);
             config.modeBands[modeId][band] = checkbox.checked;
+            saveModeSettings();
           });
         });
 
@@ -2137,6 +2953,27 @@
         els.micButton.addEventListener("click", startMicrophone);
         els.gamepadButton.addEventListener("click", startGamepadControl);
         els.midiButton.addEventListener("click", startMidiControl);
+        els.midiLearnTarget.addEventListener("change", function () {
+          state.midiLearnTarget = els.midiLearnTarget.value;
+          if (state.midiLearning) {
+            els.midiLearnStatus.textContent = "Learning " + getMidiTargetLabel(state.midiLearnTarget);
+          }
+          renderMidiMapList();
+        });
+        els.midiLearnButton.addEventListener("click", function () {
+          startMidiLearn();
+          startMidiControl();
+        });
+        els.midiClearButton.addEventListener("click", function () {
+          clearMidiTargetMapping(els.midiLearnTarget.value);
+        });
+        els.midiMapList.addEventListener("click", function (event) {
+          var button = event.target.closest("[data-midi-clear-target]");
+          if (!button) {
+            return;
+          }
+          clearMidiTargetMapping(button.getAttribute("data-midi-clear-target"));
+        });
         window.addEventListener("gamepadconnected", handleGamepadConnected);
         window.addEventListener("gamepaddisconnected", handleGamepadDisconnected);
         els.webcamButton.addEventListener("click", startWebcam);
@@ -2254,6 +3091,11 @@
           checkbox.checked = config.enabledModes.indexOf(id) !== -1;
         });
         syncModes();
+        saveModeSettings();
+        updateMidiLedForMode(id);
+        window.setTimeout(function () {
+          updateMidiLedForMode(id);
+        }, 80);
       }
 
       function setModeEnabled(id, enabled) {
@@ -2267,6 +3109,11 @@
         document.querySelectorAll("[data-mode='" + id + "']").forEach(function (checkbox) {
           checkbox.checked = config.enabledModes.indexOf(id) !== -1;
         });
+        saveModeSettings();
+        updateMidiLedForMode(id);
+        window.setTimeout(function () {
+          updateMidiLedForMode(id);
+        }, 80);
       }
 
       function setModeSet(ids) {
@@ -2284,6 +3131,8 @@
           checkbox.checked = config.enabledModes.indexOf(checkbox.getAttribute("data-mode")) !== -1;
         });
         syncModes();
+        saveModeSettings();
+        refreshMidiModeLeds();
       }
 
       function enableKaleidoscope() {
@@ -2344,6 +3193,187 @@
         return null;
       }
 
+      function normalizeMidiTargetId(id) {
+        id = String(id || "");
+        if (id.indexOf("note:") === 0 && id.indexOf("note:mode:") !== 0) {
+          var legacyMode = id.slice(5);
+          if (MODE_IDS.indexOf(legacyMode) !== -1) {
+            return "note:mode:" + legacyMode;
+          }
+        }
+        return id;
+      }
+
+      function getMidiTargetDef(id) {
+        id = normalizeMidiTargetId(id);
+        for (var i = 0; i < MIDI_TARGETS.length; i += 1) {
+          if (MIDI_TARGETS[i].id === id) {
+            return MIDI_TARGETS[i];
+          }
+        }
+        return null;
+      }
+
+      function getMidiTargetLabel(id) {
+        var target = getMidiTargetDef(id);
+        return target ? target.label : "Unknown";
+      }
+
+      function getMidiMappedSources(targetId) {
+        var sources = [];
+        Object.keys(config.midiMappings || {}).forEach(function (key) {
+          if (config.midiMappings[key] === targetId) {
+            sources.push(formatMidiInputKey(key));
+          }
+        });
+        return sources;
+      }
+
+      function formatMidiInputKey(key) {
+        var parts = String(key).split(":");
+        if (parts.length !== 3) {
+          return key;
+        }
+        var type = parts[0] === "cc" ? "CC" : "Note";
+        return type + " ch " + (Number(parts[1]) + 1) + " #" + parts[2];
+      }
+
+      function parseMidiInputKey(key) {
+        var parts = String(key).split(":");
+        if (parts.length !== 3) {
+          return null;
+        }
+        return {
+          type: parts[0],
+          channel: Number(parts[1]),
+          number: Number(parts[2])
+        };
+      }
+
+      function sendMidiToOutputs(message) {
+        if (!state.midiAccess || !state.midiOutputCount) {
+          return;
+        }
+        state.midiAccess.outputs.forEach(function (output) {
+          try {
+            output.send(message);
+          } catch (error) {
+            // Some browsers disconnect MIDI outputs without a statechange event.
+          }
+        });
+      }
+
+      function isApc40RgbLedNote(number) {
+        return (number >= 0x00 && number <= 0x27) || (number >= 0x52 && number <= 0x56);
+      }
+
+      function setMidiNoteLed(inputKey, on) {
+        var parsed = parseMidiInputKey(inputKey);
+        if (!parsed || parsed.type !== "note") {
+          return;
+        }
+        var channel = isApc40RgbLedNote(parsed.number) ? 0 : parsed.channel;
+        var velocity = on
+          ? (isApc40RgbLedNote(parsed.number) ? APC40_RGB_GREEN : APC40_LED_ON)
+          : 0;
+        sendMidiToOutputs([0x90 + channel, parsed.number, velocity]);
+      }
+
+      function isMidiModeTarget(targetId) {
+        var target = getMidiTargetDef(targetId);
+        return !!target && target.target.indexOf("mode:") === 0;
+      }
+
+      function updateMidiLedForMode(id) {
+        var targetId = "note:mode:" + id;
+        var enabled = config.enabledModes.indexOf(id) !== -1;
+        Object.keys(config.midiMappings || {}).forEach(function (key) {
+          if (normalizeMidiTargetId(config.midiMappings[key]) === targetId) {
+            setMidiNoteLed(key, enabled);
+          }
+        });
+      }
+
+      function refreshMidiModeLeds() {
+        Object.keys(config.midiMappings || {}).forEach(function (key) {
+          var targetId = normalizeMidiTargetId(config.midiMappings[key]);
+          if (!isMidiModeTarget(targetId)) {
+            return;
+          }
+          var target = getMidiTargetDef(targetId);
+          updateMidiLedForMode(target.target.slice(5));
+        });
+      }
+
+      function resyncMidiModeLedForInput(inputKey) {
+        var targetId = normalizeMidiTargetId(config.midiMappings && config.midiMappings[inputKey]);
+        if (!isMidiModeTarget(targetId)) {
+          return;
+        }
+        var target = getMidiTargetDef(targetId);
+        updateMidiLedForMode(target.target.slice(5));
+      }
+
+      function scheduleMidiModeLedResync(inputKey) {
+        resyncMidiModeLedForInput(inputKey);
+        window.setTimeout(function () {
+          resyncMidiModeLedForInput(inputKey);
+        }, 40);
+        window.setTimeout(function () {
+          resyncMidiModeLedForInput(inputKey);
+        }, 140);
+      }
+
+      function startMidiLearn() {
+        state.midiLearning = true;
+        state.midiLearnTarget = els.midiLearnTarget.value || state.midiLearnTarget;
+        els.midiLearnStatus.textContent = "Learning " + getMidiTargetLabel(state.midiLearnTarget);
+        renderMidiMapList();
+      }
+
+      function clearMidiTargetMapping(targetId) {
+        Object.keys(config.midiMappings || {}).forEach(function (key) {
+          if (config.midiMappings[key] === targetId) {
+            if (isMidiModeTarget(targetId)) {
+              setMidiNoteLed(key, false);
+            }
+            delete config.midiMappings[key];
+          }
+        });
+        els.midiLearnStatus.textContent = "Cleared " + getMidiTargetLabel(targetId);
+        saveMidiMappings();
+        renderMidiMapList();
+      }
+
+      function learnMidiInput(inputKey, inputType) {
+        var target = getMidiTargetDef(state.midiLearnTarget);
+        if (!target) {
+          state.midiLearning = false;
+          els.midiLearnStatus.textContent = "Select a target first";
+          return false;
+        }
+        if (target.type !== inputType) {
+          els.midiLearnStatus.textContent = target.type === "cc"
+            ? "Move a knob or fader for " + target.label
+            : "Press a button for " + target.label;
+          return false;
+        }
+
+        clearMidiTargetMapping(target.id);
+        if (!config.midiMappings) {
+          config.midiMappings = {};
+        }
+        config.midiMappings[inputKey] = target.id;
+        state.midiLearning = false;
+        els.midiLearnStatus.textContent = formatMidiInputKey(inputKey) + " -> " + target.label;
+        saveMidiMappings();
+        renderMidiMapList();
+        if (isMidiModeTarget(target.id)) {
+          updateMidiLedForMode(target.target.slice(5));
+        }
+        return true;
+      }
+
       async function startMidiControl() {
         if (!("requestMIDIAccess" in navigator)) {
           els.midiStatus.textContent = "Web MIDI unavailable";
@@ -2362,14 +3392,21 @@
         if (!state.midiAccess) {
           return;
         }
-        var count = 0;
+        var inputCount = 0;
+        var outputCount = 0;
         state.midiAccess.inputs.forEach(function (input) {
           input.onmidimessage = handleMidiMessage;
-          count += 1;
+          inputCount += 1;
         });
-        els.midiStatus.textContent = count > 0
-          ? "MIDI ready: touch APC40 controls"
+        state.midiAccess.outputs.forEach(function () {
+          outputCount += 1;
+        });
+        state.midiInputCount = inputCount;
+        state.midiOutputCount = outputCount;
+        els.midiStatus.textContent = inputCount > 0
+          ? "MIDI ready: inputs " + inputCount + " / LED outputs " + outputCount
           : "No MIDI inputs found";
+        refreshMidiModeLeds();
       }
 
       function handleMidiMessage(event) {
@@ -2385,29 +3422,73 @@
           handleMidiControl(channel, number, value / 127);
         } else if (command === 0x90 && value > 0) {
           handleMidiNote(channel, number);
+        } else if (command === 0x80 || (command === 0x90 && value === 0)) {
+          handleMidiNoteRelease(channel, number);
         }
       }
 
       function handleMidiControl(channel, number, normalized) {
-        var key = channel + ":" + number;
-        var targets = ["particleCount", "stardustCount", "particleSize", "glowStrength", "colorHue", "colorSaturation", "glitchStrength", "zoomAmount"];
-        if (!state.midiCcMap[key]) {
-          state.midiCcMap[key] = targets[state.midiCcIndex % targets.length];
-          state.midiCcIndex += 1;
+        var key = "cc:" + channel + ":" + number;
+        var label = formatMidiInputKey(key);
+        state.midiLastInput = key;
+        els.midiLastInput.textContent = label + " value " + Math.round(normalized * 127);
+
+        if (state.midiLearning) {
+          if (learnMidiInput(key, "cc")) {
+            applyMidiMappedTarget(config.midiMappings[key], normalized);
+          }
+          return;
         }
-        applyMidiControlTarget(state.midiCcMap[key], normalized);
-        els.midiStatus.textContent = "MIDI CC " + number + " -> " + state.midiCcMap[key];
+
+        var mapping = config.midiMappings && config.midiMappings[key];
+        if (!mapping) {
+          els.midiStatus.textContent = label + " unmapped";
+          return;
+        }
+
+        applyMidiMappedTarget(mapping, normalized);
+        els.midiStatus.textContent = label + " -> " + getMidiTargetLabel(mapping);
       }
 
       function handleMidiNote(channel, number) {
-        var key = channel + ":" + number;
-        var targets = ["stardust", "particles", "crown", "kaleidoscope", "mirrorV", "mirrorH", "glitchReactive", "quakeReactive"];
-        if (!state.midiNoteMap[key]) {
-          state.midiNoteMap[key] = targets[state.midiNoteIndex % targets.length];
-          state.midiNoteIndex += 1;
+        var key = "note:" + channel + ":" + number;
+        var label = formatMidiInputKey(key);
+        state.midiLastInput = key;
+        els.midiLastInput.textContent = label + " pressed";
+
+        if (state.midiLearning) {
+          if (learnMidiInput(key, "note")) {
+            applyMidiMappedTarget(config.midiMappings[key], 1);
+          }
+          return;
         }
-        applyMidiNoteTarget(state.midiNoteMap[key]);
-        els.midiStatus.textContent = "MIDI note " + number + " -> " + state.midiNoteMap[key];
+
+        var mapping = config.midiMappings && config.midiMappings[key];
+        if (!mapping) {
+          els.midiStatus.textContent = label + " unmapped";
+          return;
+        }
+
+        applyMidiMappedTarget(mapping, 1);
+        els.midiStatus.textContent = label + " -> " + getMidiTargetLabel(mapping);
+        scheduleMidiModeLedResync(key);
+      }
+
+      function handleMidiNoteRelease(channel, number) {
+        var key = "note:" + channel + ":" + number;
+        scheduleMidiModeLedResync(key);
+      }
+
+      function applyMidiMappedTarget(mapping, normalized) {
+        var def = getMidiTargetDef(mapping);
+        if (!def) {
+          return;
+        }
+        if (def.type === "cc") {
+          applyMidiControlTarget(def.target, normalized);
+        } else {
+          applyMidiNoteTarget(def.target);
+        }
       }
 
       function applyMidiControlTarget(target, normalized) {
@@ -2427,6 +3508,10 @@
           setRangeControl(els.glowStrength, els.glowStrengthValue, "glowStrength", normalized * GLOW_STRENGTH_MAX, 2, function (value) {
             return value.toFixed(2);
           });
+        } else if (target === "sparkPower") {
+          setRangeControl(els.sparkPower, els.sparkPowerValue, "sparkPower", 0.4 + normalized * 2.1, 2, function (value) {
+            return value.toFixed(2);
+          });
         } else if (target === "colorHue") {
           setRangeControl(els.colorHue, els.colorHueValue, "colorHue", -180 + normalized * 360, 0, function (value) {
             return String(Math.round(value));
@@ -2439,16 +3524,52 @@
           setRangeControl(els.glitchStrength, els.glitchStrengthValue, "glitchStrength", normalized * 1.5, 2, function (value) {
             return value.toFixed(2);
           });
+        } else if (target === "grungeStrength") {
+          setRangeControl(els.grungeStrength, els.grungeStrengthValue, "grungeStrength", normalized * 1.5, 2, function (value) {
+            return value.toFixed(2);
+          });
         } else if (target === "zoomAmount") {
           setRangeControl(els.zoomAmount, els.zoomAmountValue, "zoomAmount", 0.5 + normalized * 2, 2, function (value) {
             return value.toFixed(2);
+          });
+        } else if (target === "kaleidoscopeSides") {
+          setRangeControl(els.kaleidoscopeSides, els.kaleidoscopeSidesValue, "kaleidoscopeSides", 3 + Math.round(normalized * 13), 0, function (value) {
+            return String(Math.round(value));
+          }, enableKaleidoscope);
+        } else if (target === "manualRotationX") {
+          setRangeControl(els.manualRotationX, els.manualRotationXValue, "manualRotationX", -180 + normalized * 360, 0, function (value) {
+            return String(Math.round(value));
+          }, updateManualRotationTarget);
+        } else if (target === "manualRotationY") {
+          setRangeControl(els.manualRotationY, els.manualRotationYValue, "manualRotationY", -180 + normalized * 360, 0, function (value) {
+            return String(Math.round(value));
+          }, updateManualRotationTarget);
+        } else if (target === "autoVjIntensity") {
+          setRangeControl(els.autoVjIntensity, els.autoVjIntensityValue, "autoVjIntensity", normalized, 2, function (value) {
+            return value.toFixed(2);
+          });
+        } else if (target === "autoVjScenePace") {
+          setRangeControl(els.autoVjScenePace, els.autoVjScenePaceValue, "autoVjScenePace", 0.25 + normalized * 1.75, 2, function (value) {
+            return value.toFixed(2);
+          });
+        } else if (target === "micSensitivity") {
+          setRangeControl(els.micSensitivity, els.micSensitivityValue, "micSensitivity", 0.5 + normalized * 7.5, 1, function (value) {
+            return value.toFixed(1);
           });
         }
       }
 
       function applyMidiNoteTarget(target) {
-        if (target === "stardust" || target === "particles" || target === "crown") {
-          toggleMode(target);
+        if (target.indexOf("mode:") === 0) {
+          toggleMode(target.slice(5));
+        } else if (target === "autoVj") {
+          setToggleControl(els.autoVjEnabled, "autoVjEnabled", !config.autoVjEnabled, function (checked) {
+            if (checked) {
+              startAutoVj();
+            } else {
+              stopAutoVj();
+            }
+          });
         } else if (target === "kaleidoscope") {
           setToggleControl(els.kaleidoscopeEnabled, "kaleidoscopeEnabled", !config.kaleidoscopeEnabled);
         } else if (target === "mirrorV") {
@@ -2457,9 +3578,29 @@
           setToggleControl(els.mirrorHorizontal, "mirrorHorizontal", !config.mirrorHorizontal);
         } else if (target === "glitchReactive") {
           setToggleControl(els.glitchReactive, "glitchReactive", !config.glitchReactive);
+        } else if (target === "grungeReactive") {
+          setToggleControl(els.grungeReactive, "grungeReactive", !config.grungeReactive);
         } else if (target === "quakeReactive") {
           setToggleControl(els.quakeReactive, "quakeReactive", !config.quakeReactive);
+        } else if (target === "zoomReactive") {
+          setToggleControl(els.zoomReactive, "zoomReactive", !config.zoomReactive);
+        } else if (target === "nextMode") {
+          enableNextMode();
+        } else if (target === "clearModes") {
+          config.enabledModes = [];
+          syncModes();
+          saveModeSettings();
         }
+      }
+
+      function enableNextMode() {
+        var current = config.enabledModes.length
+          ? config.enabledModes[config.enabledModes.length - 1]
+          : MODE_IDS[0];
+        var index = MODE_IDS.indexOf(current);
+        var next = MODE_IDS[(index + 1 + MODE_IDS.length) % MODE_IDS.length];
+        setModeEnabled(next, true);
+        syncModes();
       }
 
       function startAutoVj() {
@@ -2618,7 +3759,7 @@
         if (forceDrop || (bass > mid * 1.18 && bass > treble * 1.08)) {
           return {
             label: "Drop scene",
-            modes: ["infiniteFractal", "stardust", "audioTunnel", "starGate", "shardBurst"],
+            modes: ["mandelRiver", "acidBloom", "stardust", "audioTunnel", "starGate"],
             kaleidoscope: false,
             mirrorVertical: false,
             mirrorHorizontal: false,
@@ -2631,7 +3772,7 @@
         if (treble > bass * 1.12 && treble > mid * 0.94) {
           return {
             label: "Spark scene",
-            modes: ["plasmaBall", "electricWeb", "cometField", "ribbonFlow"],
+            modes: ["quantumFoam", "synapseFlow", "plasmaBall", "electricWeb", "cometField"],
             kaleidoscope: true,
             mirrorVertical: state.autoVj.sceneIndex % 2 === 0,
             mirrorHorizontal: false,
@@ -2644,7 +3785,7 @@
         if (mid > bass * 1.05) {
           return {
             label: "Shape scene",
-            modes: ["cymaticPlate", "flowerMandala", "orbitSystem", "vortexRings"],
+            modes: ["juliaVeins", "prismTissue", "cymaticPlate", "flowerMandala", "vortexRings"],
             kaleidoscope: state.autoVj.sceneIndex % 2 === 1,
             mirrorVertical: false,
             mirrorHorizontal: state.autoVj.sceneIndex % 2 === 0,
@@ -2656,7 +3797,7 @@
         }
         return {
           label: "Crown scene",
-          modes: ["crown", "crystalCave", "dodecahedron", "sphereMesh"],
+          modes: ["cellColony", "myceliumWeb", "crown", "crystalCave", "sphereMesh"],
           kaleidoscope: state.autoVj.sceneIndex % 3 === 0,
           mirrorVertical: false,
           mirrorHorizontal: false,
@@ -2770,6 +3911,7 @@
           checkbox.checked = isModeBandEnabled(modeId, band);
         });
 
+        renderMidiMapList();
         updateRotationControls();
         updateManualRotationTarget();
       }
@@ -2827,6 +3969,8 @@
           mode = createTriangleMode();
         } else if (id === "crown") {
           mode = createCymaticCrownMode();
+        } else if (BACKGROUND_MODE_DEFS[id]) {
+          mode = createOrganicBackgroundMode(id);
         } else if (id === "infiniteFractal") {
           mode = createInfiniteFractalMode();
         } else if (id === "video") {
@@ -4752,6 +5896,73 @@
         };
       }
 
+      function createOrganicBackgroundMode(id) {
+        var def = BACKGROUND_MODE_DEFS[id];
+        var geometry = new THREE.PlaneGeometry(2, 2);
+        var material = new THREE.ShaderMaterial({
+          uniforms: {
+            resolution: { value: new THREE.Vector2(window.innerWidth, window.innerHeight) },
+            time: { value: 0 },
+            bass: { value: 0 },
+            mid: { value: 0 },
+            treble: { value: 0 },
+            overall: { value: 0 },
+            hueShift: { value: 0 },
+            variant: { value: def.variant },
+            baseHue: { value: def.hue },
+            flow: { value: def.flow },
+            complexity: { value: def.complexity },
+            alpha: { value: 0.72 }
+          },
+          vertexShader: FRACTAL_VERTEX_SHADER,
+          fragmentShader: ORGANIC_BACKGROUND_FRAGMENT_SHADER,
+          transparent: true,
+          side: THREE.DoubleSide,
+          depthTest: false,
+          depthWrite: false,
+          blending: THREE.NormalBlending
+        });
+
+        var mesh = new THREE.Mesh(geometry, material);
+        mesh.name = id + "-background-plane";
+        mesh.frustumCulled = false;
+        mesh.renderOrder = -12 + def.variant * 0.001;
+
+        var group = new THREE.Group();
+        group.name = id + "-background";
+        group.frustumCulled = false;
+        group.add(mesh);
+
+        return {
+          attachToScene: true,
+          object: group,
+          update: function (delta, time) {
+            var distance = 640 + def.variant * 0.7;
+            var fov = THREE.MathUtils.degToRad(state.camera.fov);
+            var height = 2 * Math.tan(fov * 0.5) * distance;
+            var width = height * state.camera.aspect;
+
+            group.position.copy(state.camera.position);
+            group.quaternion.copy(state.camera.quaternion);
+            mesh.position.set(0, 0, -distance);
+            mesh.scale.set(width, height, 1);
+
+            var levels = getModeAudioLevels(id);
+            material.uniforms.resolution.value.set(window.innerWidth, window.innerHeight);
+            material.uniforms.time.value = time;
+            material.uniforms.bass.value = levels.bass;
+            material.uniforms.mid.value = levels.mid;
+            material.uniforms.treble.value = levels.treble;
+            material.uniforms.overall.value = levels.overall;
+            material.uniforms.hueShift.value = config.colorHue / 180;
+            material.uniforms.baseHue.value = (def.hue + config.colorHue / 360) % 1;
+            material.uniforms.flow.value = def.flow + levels.mid * 0.18;
+            material.uniforms.complexity.value = def.complexity + levels.treble * 0.14;
+            material.uniforms.alpha.value = clamp(0.42 + levels.overall * 0.28 + config.glowStrength * 0.85, 0.34, 0.82);
+          }
+        };
+      }
+
       function createInfiniteFractalMode() {
         var geometry = new THREE.PlaneGeometry(2, 2);
         var material = new THREE.ShaderMaterial({
@@ -5141,6 +6352,13 @@
         if (!file) {
           return;
         }
+        await loadAudioFileObject(file);
+      }
+
+      async function loadAudioFileObject(file) {
+        if (!file) {
+          return;
+        }
         try {
           await ensureAudioContext();
           var objectUrl = URL.createObjectURL(file);
@@ -5186,6 +6404,13 @@
 
       async function loadVideoFile(event) {
         var file = event.target.files && event.target.files[0];
+        if (!file) {
+          return;
+        }
+        await loadVideoFileObject(file);
+      }
+
+      async function loadVideoFileObject(file) {
         if (!file) {
           return;
         }
@@ -5347,7 +6572,82 @@
 
       function savePreset() {
         localStorage.setItem(CONFIG_KEY, JSON.stringify(config));
+        saveMidiMappings();
+        saveModeSettings();
         setStatus("Preset saved", "Configuration stored locally", "live");
+      }
+
+      function saveMidiMappings() {
+        try {
+          localStorage.setItem(MIDI_MAP_KEY, JSON.stringify(config.midiMappings || {}));
+        } catch (error) {
+          els.midiLearnStatus.textContent = "MIDI map could not be saved";
+        }
+      }
+
+      function loadStoredMidiMappings() {
+        try {
+          var saved = localStorage.getItem(MIDI_MAP_KEY);
+          if (!saved) {
+            var preset = localStorage.getItem(CONFIG_KEY);
+            if (preset) {
+              var parsedPreset = JSON.parse(preset);
+              if (parsedPreset && parsedPreset.midiMappings) {
+                config.midiMappings = sanitizeMidiMappings(parsedPreset.midiMappings);
+                saveMidiMappings();
+              }
+            }
+            return;
+          }
+          config.midiMappings = sanitizeMidiMappings(JSON.parse(saved));
+          saveMidiMappings();
+        } catch (error) {
+          config.midiMappings = {};
+        }
+      }
+
+      function saveModeSettings() {
+        try {
+          localStorage.setItem(MODE_STATE_KEY, JSON.stringify({
+            enabledModes: config.enabledModes,
+            modeBands: config.modeBands
+          }));
+        } catch (error) {
+          setStatus("Mode save failed", "Visualization mode settings were not stored", "error");
+        }
+      }
+
+      function loadStoredModeSettings() {
+        try {
+          var saved = localStorage.getItem(MODE_STATE_KEY);
+          if (!saved) {
+            var preset = localStorage.getItem(CONFIG_KEY);
+            if (preset) {
+              var parsedPreset = JSON.parse(preset);
+              if (parsedPreset) {
+                applyStoredModeSettings(parsedPreset);
+                saveModeSettings();
+              }
+            }
+            return;
+          }
+          applyStoredModeSettings(JSON.parse(saved));
+        } catch (error) {
+          config.enabledModes = Array.isArray(config.enabledModes) ? config.enabledModes : [];
+          config.modeBands = normalizeModeBands(config.modeBands);
+        }
+      }
+
+      function applyStoredModeSettings(saved) {
+        if (!saved || typeof saved !== "object") {
+          return;
+        }
+        if (Array.isArray(saved.enabledModes)) {
+          config.enabledModes = saved.enabledModes.filter(function (id) {
+            return MODE_IDS.indexOf(id) !== -1;
+          });
+        }
+        config.modeBands = normalizeModeBands(saved.modeBands || config.modeBands);
       }
 
       function loadPreset() {
@@ -5359,9 +6659,12 @@
         try {
           var parsed = JSON.parse(saved);
           config = sanitizeConfig(Object.assign({}, config, parsed));
+          saveMidiMappings();
+          saveModeSettings();
           syncControlsFromConfig();
           rebuildAllModes();
           syncModes();
+          refreshMidiModeLeds();
           if (config.autoVjEnabled) {
             startAutoVj();
           } else {
@@ -5436,6 +6739,7 @@
         next.mirrorHorizontalPosition = clamp(Number(next.mirrorHorizontalPosition) || 0.5, 0.05, 0.95);
         next.micSensitivity = clamp(Number(next.micSensitivity) || 3.4, 0.5, 8);
         next.micNoiseGate = clamp(Number(next.micNoiseGate) || 0.03, 0, 0.25);
+        next.midiMappings = sanitizeMidiMappings(next.midiMappings);
         next.aiImagePrompt = String(next.aiImagePrompt || "").slice(0, 320);
         next.videoWidth = clamp(Number(next.videoWidth) || 320, 120, 480);
         next.videoHeight = Math.round(next.videoWidth * 0.75);
@@ -5447,6 +6751,33 @@
           : [];
         next.modeBands = normalizeModeBands(next.modeBands);
         return next;
+      }
+
+      function sanitizeMidiMappings(mappings) {
+        var clean = {};
+        if (!mappings || typeof mappings !== "object") {
+          return clean;
+        }
+
+        Object.keys(mappings).forEach(function (key) {
+          var parts = key.split(":");
+          var targetId = normalizeMidiTargetId(mappings[key]);
+          var target = getMidiTargetDef(targetId);
+          var channel = Number(parts[1]);
+          var number = Number(parts[2]);
+          if (
+            parts.length === 3 &&
+            target &&
+            parts[0] === target.type &&
+            channel >= 0 &&
+            channel <= 15 &&
+            number >= 0 &&
+            number <= 127
+          ) {
+            clean[key] = target.id;
+          }
+        });
+        return clean;
       }
 
       function rebuildAllModes() {
